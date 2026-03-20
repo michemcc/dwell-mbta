@@ -245,13 +245,26 @@ export default function SelectorPanel({ onCommit }) {
                   display: 'flex', flexDirection: 'column', gap: 8, padding: '18px 20px',
                   cursor: 'pointer', background: 'var(--bg-3)',
                   border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
-                  textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.14s',
+                  textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.18s',
+                  position: 'relative', overflow: 'hidden',
                 }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-mid)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = 'var(--accent)'
+                  e.currentTarget.style.background = 'rgba(240,204,74,0.07)'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 6px 24px rgba(240,204,74,0.12)'
+                  e.currentTarget.querySelector('.mode-label').style.color = 'var(--text)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                  e.currentTarget.style.background = 'var(--bg-3)'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                  e.currentTarget.querySelector('.mode-label').style.color = 'var(--text-muted)'
+                }}
               >
                 <span style={{ fontSize: 22 }}>{m.icon}</span>
-                <div style={{ fontFamily: 'var(--display)', fontSize: 16, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '-0.01em' }}>{m.label}</div>
+                <div className="mode-label" style={{ fontFamily: 'var(--display)', fontSize: 16, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '-0.01em', transition: 'color 0.18s' }}>{m.label}</div>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', lineHeight: 1.4 }}>{m.description}</div>
               </button>
             ))}

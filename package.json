@@ -1,6 +1,6 @@
 {
   "name": "dwell",
-  "version": "2026.1.3",
+  "version": "2026.2.5",
   "description": "Real-time MBTA transit intelligence — built around the stop you care about.",
   "private": true,
   "scripts": {

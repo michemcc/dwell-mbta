@@ -1,0 +1,9 @@
+[build]
+  command   = "npm run build"
+  publish   = "dist"
+
+# SPA fallback — makes React routing work on direct URL access and refresh
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200

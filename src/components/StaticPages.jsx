@@ -1,7 +1,7 @@
 import React from 'react'
 import { MonoLabel, Divider } from './Primitives'
 
-const VERSION = '2026.1.3'
+const VERSION = '2026.2.1'
 
 // ── Shared layout ─────────────────────────────────────────────────────────────
 function PageShell({ title, label, children }) {
@@ -43,7 +43,7 @@ function A({ href, children }) {
 }
 
 // ── About ─────────────────────────────────────────────────────────────────────
-export function AboutPage() {
+export function AboutPage({ onNavigate }) {
   return (
     <PageShell title="About DWELL" label={`v${VERSION}`}>
       <P>
@@ -89,9 +89,41 @@ export function AboutPage() {
 }
 
 // ── Feedback ──────────────────────────────────────────────────────────────────
+// Uses Resend (https://resend.com) to send feedback emails.
+// Add VITE_RESEND_API_KEY and VITE_FEEDBACK_TO_EMAIL to your .env file.
+// Resend free tier: 100 emails/day, 3,000/month — plenty for a personal app.
+const RESEND_API_KEY  = import.meta.env.VITE_RESEND_API_KEY  || ''
+const FEEDBACK_TO     = import.meta.env.VITE_FEEDBACK_TO_EMAIL || 'feedback@yourdomain.com'
+const FEEDBACK_FROM   = import.meta.env.VITE_FEEDBACK_FROM_EMAIL || 'dwell@yourdomain.com'
+
+async function sendViaResend({ type, message }) {
+  if (!RESEND_API_KEY) throw new Error('No Resend API key configured')
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: `DWELL Feedback <${FEEDBACK_FROM}>`,
+      to:   [FEEDBACK_TO],
+      subject: `DWELL Feedback — ${type}`,
+      text: `${message}\n\n---\nDWELL ${VERSION}`,
+      html: `<p>${message.replace(/\n/g, '<br>')}</p><hr><p style="color:#888">DWELL ${VERSION}</p>`,
+    }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.message || `Resend ${res.status}`)
+  }
+  return true
+}
+
 export function FeedbackPage() {
-  const [submitted, setSubmitted] = React.useState(false)
-  const [form, setForm] = React.useState({ type: 'bug', message: '' })
+  const [status, setStatus]   = React.useState('idle') // idle | sending | success | error
+  const [errMsg, setErrMsg]   = React.useState('')
+  const [form, setForm]       = React.useState({ type: 'bug', message: '' })
+  const hasResend = !!RESEND_API_KEY
 
   const types = [
     { id: 'bug',     label: 'Bug report' },
@@ -100,17 +132,29 @@ export function FeedbackPage() {
     { id: 'other',   label: 'Other' },
   ]
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.message.trim()) return
-    // In production, wire to a form backend (Formspree, Netlify Forms, etc.)
-    // For now, open a mailto with the feedback pre-filled
-    const subject = encodeURIComponent(`DWELL Feedback — ${types.find(t => t.id === form.type)?.label}`)
-    const body = encodeURIComponent(form.message + `\n\n---\nDWELL ${VERSION}`)
-    window.open(`mailto:feedback@yourdomain.com?subject=${subject}&body=${body}`)
-    setSubmitted(true)
+    const typeLabel = types.find(t => t.id === form.type)?.label || form.type
+
+    if (hasResend) {
+      setStatus('sending')
+      try {
+        await sendViaResend({ type: typeLabel, message: form.message })
+        setStatus('success')
+      } catch (e) {
+        setErrMsg(e.message)
+        setStatus('error')
+      }
+    } else {
+      // Fallback to mailto when no Resend key is configured
+      const subject = encodeURIComponent(`DWELL Feedback — ${typeLabel}`)
+      const body    = encodeURIComponent(form.message + `\n\n---\nDWELL ${VERSION}`)
+      window.open(`mailto:${FEEDBACK_TO}?subject=${subject}&body=${body}`)
+      setStatus('success')
+    }
   }
 
-  if (submitted) {
+  if (status === 'success') {
     return (
       <PageShell title="Feedback" label="DWELL">
         <div style={{
@@ -120,11 +164,19 @@ export function FeedbackPage() {
         }}>
           <div style={{ fontSize: 28, marginBottom: 12 }}>✓</div>
           <div style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
-            Thanks for your feedback
+            Feedback received
           </div>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)' }}>
-            Your mail client should have opened. If not, email us directly.
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', marginBottom: 20 }}>
+            {hasResend ? 'Sent via Resend.' : 'Your mail client should have opened.'}
           </div>
+          <button onClick={() => { setStatus('idle'); setForm({ type: 'bug', message: '' }) }}
+            style={{
+              padding: '8px 20px', background: 'transparent',
+              border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-dim)', fontFamily: 'var(--mono)', fontSize: 11,
+              letterSpacing: '0.1em', cursor: 'pointer',
+            }}
+          >SEND ANOTHER</button>
         </div>
       </PageShell>
     )
@@ -171,18 +223,50 @@ export function FeedbackPage() {
         onBlur={e => e.target.style.borderColor = 'var(--border)'}
       />
 
-      <button onClick={handleSubmit}
+      {/* Error state */}
+      {status === 'error' && (
+        <div style={{
+          padding: '10px 14px', marginBottom: 14,
+          background: 'rgba(232,80,74,0.08)', border: '1px solid rgba(232,80,74,0.3)',
+          borderLeft: '3px solid var(--red)', borderRadius: 'var(--radius-sm)',
+          fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--red)', lineHeight: 1.5,
+        }}>
+          ⚠ {errMsg || 'Send failed.'} — check your Resend key in .env or{' '}
+          <a href={`mailto:${FEEDBACK_TO}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+            email directly
+          </a>.
+        </div>
+      )}
+
+      {/* Resend key missing notice */}
+      {!hasResend && (
+        <div style={{
+          padding: '8px 12px', marginBottom: 14,
+          background: 'var(--bg-3)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)',
+          fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', lineHeight: 1.6,
+        }}>
+          No Resend key found — will open your mail client instead.{' '}
+          Add <code style={{ color: 'var(--accent)' }}>VITE_RESEND_API_KEY</code> to .env to send directly.
+        </div>
+      )}
+
+      <button
+        onClick={handleSubmit}
+        disabled={status === 'sending' || !form.message.trim()}
         style={{
           padding: '12px 28px', background: 'var(--accent)', color: '#07080C',
-          border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+          border: 'none', borderRadius: 'var(--radius-sm)',
+          cursor: status === 'sending' || !form.message.trim() ? 'default' : 'pointer',
           fontFamily: 'var(--display)', fontSize: 14, fontWeight: 800,
           letterSpacing: '0.06em', transition: 'opacity 0.14s',
-          opacity: form.message.trim() ? 1 : 0.4,
+          opacity: form.message.trim() && status !== 'sending' ? 1 : 0.4,
+          display: 'flex', alignItems: 'center', gap: 8,
         }}
-        onMouseEnter={e => { if (form.message.trim()) e.currentTarget.style.opacity = '0.85' }}
-        onMouseLeave={e => e.currentTarget.style.opacity = form.message.trim() ? '1' : '0.4'}
+        onMouseEnter={e => { if (form.message.trim() && status !== 'sending') e.currentTarget.style.opacity = '0.85' }}
+        onMouseLeave={e => e.currentTarget.style.opacity = form.message.trim() && status !== 'sending' ? '1' : '0.4'}
       >
-        SEND FEEDBACK →
+        {status === 'sending' ? 'SENDING…' : 'SEND FEEDBACK →'}
       </button>
     </PageShell>
   )

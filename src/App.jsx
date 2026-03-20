@@ -1,216 +1,270 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { useClock, useFavorites } from './hooks/index'
-import { useRoutes, useStops } from './hooks/index'
-import { MODES, getLineColor } from './utils/mbta'
+import { useClock, useFavorites, useStopSearch, useTheme } from './hooks/index'
+import { getLineColor, mbtaFetch } from './utils/mbta'
 import SelectorPanel from './components/SelectorPanel'
 import FavoritesPanel from './components/FavoritesPanel'
 import ArrivalsBoard from './components/ArrivalsBoard'
+import NextTrain from './components/NextTrain'
 import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.1.3'
+const VERSION = '2026.2.5'
+const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
-// ── Quick Search ──────────────────────────────────────────────────────────────
-// Floating search box on the landing page for direct stop lookup
-function QuickSearch({ onCommit }) {
+// ── QuickSearch — stop search, instant commit, no route-picking step ────────
+// Selecting a stop immediately fetches its routes and navigates to arrivals.
+// The route-picker second step has been removed — faster for commuters.
+function QuickSearch({ onCommit, autoFocus }) {
   const [query, setQuery] = useState('')
-  const [mode, setMode]   = useState(MODES[0])
-  const { routes, loading: rLoading } = useRoutes(mode)
-  const [route, setRoute] = useState(null)
-  const { stops, loading: sLoading }  = useStops(route)
   const [open, setOpen]   = useState(false)
-  const ref               = useRef(null)
+  const { results, loading } = useStopSearch(query)
+  const ref      = useRef(null)
+  const inputRef = useRef(null)
 
-  // Close on outside click
   useEffect(() => {
     const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
   }, [])
 
-  // Filter stops by query
-  const filteredStops = stops.filter(s =>
-    (s.attributes?.name || '').toLowerCase().includes(query.toLowerCase())
-  )
-  // Filter routes by query too when no route selected
-  const filteredRoutes = routes.filter(r => {
-    const q = query.toLowerCase()
-    return (r.attributes?.long_name || '').toLowerCase().includes(q) ||
-           (r.attributes?.short_name || '').toLowerCase().includes(q) ||
-           r.id.toLowerCase().includes(q)
-  })
+  useEffect(() => {
+    if (autoFocus) setTimeout(() => inputRef.current?.focus(), 120)
+  }, [autoFocus])
 
-  const handleStopSelect = (stop) => {
-    if (!route) return
-    onCommit({ mode, route, stop })
-    setQuery('')
+  // Selecting a stop: fetch its routes, pick best one, commit immediately
+  const handleSelect = useCallback(async (rawStop) => {
     setOpen(false)
-  }
+    setQuery(rawStop.attributes?.name || '')
+    try {
+      // CRITICAL: resolve to the parent station if the cache returned a child stop.
+      // Child stops (platform-level, location_type=0) only serve one direction/route.
+      // Parent stations (location_type=1, e.g. "place-dwnxg") serve ALL routes at that stop.
+      // Without this, Downtown Crossing only shows Red Line in one direction,
+      // and the Orange Line chip never appears.
+      const parentId = rawStop.relationships?.parent_station?.data?.id
+      let stop = rawStop
+      if (parentId) {
+        try {
+          const pd = await mbtaFetch(`/stops/${parentId}`)
+          if (pd.data) stop = pd.data
+        } catch { /* keep rawStop if parent fetch fails */ }
+      }
+
+      const d      = await mbtaFetch(`/routes?filter[stop]=${stop.id}&sort=sort_order`)
+      const routes = d.data || []
+      if (!routes.length) return
+      // Prefer subway first, then CR, then bus
+      const route = [...routes].sort((a, b) => (a.attributes?.type ?? 9) - (b.attributes?.type ?? 9))[0]
+      const type  = route.attributes?.type ?? 3
+      const MODES = {
+        0: { id:'subway',   label:'Subway',        shortLabel:'SWY', routeTypes:'0,1', icon:'⬡', description:'' },
+        1: { id:'subway',   label:'Subway',        shortLabel:'SWY', routeTypes:'0,1', icon:'⬡', description:'' },
+        2: { id:'commuter', label:'Commuter Rail',  shortLabel:'CRL', routeTypes:'2',   icon:'◈', description:'' },
+        3: { id:'bus',      label:'Bus',            shortLabel:'BUS', routeTypes:'3',   icon:'◎', description:'' },
+      }
+      onCommit({ mode: MODES[type] || MODES[3], route, stop })
+    } catch {}
+    setQuery('')
+  }, [onCommit])
+
+  const clear = () => { setQuery(''); setOpen(false) }
 
   return (
-    <div ref={ref} style={{ position: 'relative', marginBottom: 36 }}>
-      {/* Label */}
-      <MonoLabel style={{ display: 'block', marginBottom: 10 }}>Quick search</MonoLabel>
-
-      {/* Mode pills */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-        {MODES.map(m => (
-          <button key={m.id} onClick={() => { setMode(m); setRoute(null); setQuery('') }}
-            style={{
-              padding: '4px 12px', borderRadius: 999, cursor: 'pointer',
-              background: mode?.id === m.id ? 'var(--accent)' : 'transparent',
-              border: `1px solid ${mode?.id === m.id ? 'var(--accent)' : 'var(--border)'}`,
-              color: mode?.id === m.id ? '#07080C' : 'var(--text-muted)',
-              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em',
-              transition: 'all 0.14s',
-            }}>{m.label}</button>
-        ))}
-      </div>
-
-      {/* Search input */}
+    <div ref={ref} style={{ position: 'relative' }}>
       <div style={{ position: 'relative' }}>
         <span style={{
           position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
           color: 'var(--accent)', fontFamily: 'var(--mono)', fontSize: 16, pointerEvents: 'none',
         }}>›</span>
         <input
+          ref={inputRef}
           value={query}
           onChange={e => { setQuery(e.target.value); setOpen(true) }}
           onFocus={() => setOpen(true)}
-          placeholder={route ? `Search stops on ${route.attributes?.short_name || route.id}…` : `Search routes or stops…`}
+          placeholder="Type any stop name — Park Street, Salem, Downtown Crossing…"
           style={{
             width: '100%', background: 'var(--bg-3)',
             border: '1px solid var(--border)', borderLeft: '2px solid var(--accent)',
             borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-            fontFamily: 'var(--mono)', fontSize: 13, padding: '12px 40px 12px 32px',
-            letterSpacing: '0.04em', outline: 'none',
+            fontFamily: 'var(--mono)', fontSize: 13, padding: '13px 40px 13px 32px',
+            letterSpacing: '0.04em', outline: 'none', transition: 'border-color 0.14s',
           }}
-          onKeyDown={e => { if (e.key === 'Escape') { setOpen(false); e.target.blur() }}}
+          onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+          onBlur={e => e.target.style.borderColor = 'var(--border)'}
+          onKeyDown={e => {
+            if (e.key === 'Escape') { clear(); e.target.blur() }
+            // Enter on first result
+            if (e.key === 'Enter' && results.length > 0) handleSelect(results[0])
+          }}
         />
-        {(query || route) && (
-          <button onClick={() => { setQuery(''); setRoute(null); setOpen(false) }}
-            style={{
-              position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
-              background: 'var(--bg-4)', border: 'none', borderRadius: '50%',
-              width: 22, height: 22, cursor: 'pointer', color: 'var(--text-muted)',
-              fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>×</button>
+        {query && (
+          <button onMouseDown={e => { e.preventDefault(); clear() }} style={{
+            position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+            background: 'var(--bg-4)', border: 'none', borderRadius: '50%',
+            width: 22, height: 22, cursor: 'pointer', color: 'var(--text-muted)',
+            fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>×</button>
         )}
       </div>
 
-      {/* Dropdown */}
-      {open && query.length >= 1 && (
-        <div className="anim-fade-up" style={{
+      {open && query.length >= 2 && (
+        <div style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
-          background: 'var(--bg-2)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-md)', zIndex: 200,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.6)', overflow: 'hidden',
+          background: 'var(--bg-2)', border: '1px solid var(--border-mid)',
+          borderRadius: 'var(--radius-md)', zIndex: 400,
+          boxShadow: '0 8px 32px var(--shadow)', overflow: 'hidden',
           maxHeight: 320, overflowY: 'auto',
         }}>
-          {/* If no route selected: show matching routes */}
-          {!route && (
-            <>
-              {rLoading && (
-                <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Spinner size={12} /><span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)' }}>Loading routes…</span>
-                </div>
-              )}
-              {filteredRoutes.slice(0, 8).map(r => {
-                const lc = getLineColor(r.id)
-                return (
-                  <button key={r.id} onClick={() => { setRoute(r); setQuery('') }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-                      padding: '11px 16px', background: 'transparent', border: 'none',
-                      borderBottom: '1px solid var(--border)', cursor: 'pointer',
-                      textAlign: 'left', fontFamily: 'inherit', transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-3)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: lc.accent, flexShrink: 0 }} />
-                    <span style={{ flex: 1, fontSize: 13, fontFamily: 'var(--sans)', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {r.attributes?.long_name || r.attributes?.short_name || r.id}
-                    </span>
-                    {r.attributes?.short_name && r.attributes.short_name !== r.attributes?.long_name && (
-                      <Pill color={lc.accent} style={{ flexShrink: 0 }}>{r.attributes.short_name}</Pill>
-                    )}
-                    <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', flexShrink: 0 }}>→ pick stop</span>
-                  </button>
-                )
-              })}
-              {!rLoading && filteredRoutes.length === 0 && (
-                <div style={{ padding: '20px 16px', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', textAlign: 'center' }}>
-                  No routes match
-                </div>
-              )}
-            </>
+          {loading && (
+            <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Spinner size={12} />
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)' }}>Searching…</span>
+            </div>
           )}
-
-          {/* Route selected: show matching stops */}
-          {route && (
-            <>
-              {/* Route breadcrumb */}
-              <div style={{
-                padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8,
-                borderBottom: '1px solid var(--border)',
-                background: 'var(--bg-3)',
-              }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: getLineColor(route.id).accent, flexShrink: 0 }} />
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', flex: 1 }}>
-                  {route.attributes?.long_name || route.id}
-                </span>
-                <button onClick={() => { setRoute(null); setQuery('') }}
-                  style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                  ← change route
-                </button>
+          {!loading && results.length === 0 && (
+            <div style={{ padding: '20px 16px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)' }}>
+              No stops match "{query}"
+            </div>
+          )}
+          {results.map((stop, i) => (
+            <button
+              key={stop.id}
+              onMouseDown={e => { e.preventDefault(); handleSelect(stop) }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+                padding: '12px 16px', background: i === 0 ? 'rgba(240,204,74,0.04)' : 'transparent',
+                border: 'none', borderBottom: '1px solid var(--border)',
+                cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+                transition: 'background 0.12s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-3)'}
+              onMouseLeave={e => e.currentTarget.style.background = i === 0 ? 'rgba(240,204,74,0.04)' : 'transparent'}
+            >
+              <span style={{ fontSize: 9, color: 'var(--text-dim)', flexShrink: 0 }}>◆</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontFamily: 'var(--sans)', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {stop.attributes?.name}
+                </div>
+                {stop.attributes?.municipality && (
+                  <div style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--text-dim)', marginTop: 2, letterSpacing: '0.04em' }}>
+                    {stop.attributes.municipality}
+                  </div>
+                )}
               </div>
-              {sLoading && (
-                <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Spinner size={12} /><span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)' }}>Loading stops…</span>
-                </div>
-              )}
-              {filteredStops.slice(0, 10).map(s => (
-                <button key={s.id} onClick={() => handleStopSelect(s)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-                    padding: '11px 16px', background: 'transparent', border: 'none',
-                    borderBottom: '1px solid var(--border)', cursor: 'pointer',
-                    textAlign: 'left', fontFamily: 'inherit', transition: 'background 0.12s',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-3)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  <span style={{ fontSize: 9, color: 'var(--text-dim)' }}>◆</span>
-                  <span style={{ flex: 1, fontSize: 13, fontFamily: 'var(--sans)', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {s.attributes?.name || s.id}
-                  </span>
-                  {s.attributes?.municipality && (
-                    <span style={{ fontSize: 10, fontFamily: 'var(--mono)', color: 'var(--text-dim)', letterSpacing: '0.04em' }}>
-                      {s.attributes.municipality}
-                    </span>
-                  )}
-                </button>
-              ))}
-              {!sLoading && filteredStops.length === 0 && (
-                <div style={{ padding: '20px 16px', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', textAlign: 'center' }}>
-                  No stops match
-                </div>
-              )}
-            </>
-          )}
+              {/* Show a hint of what line(s) serve this stop would require extra fetch; skip for speed */}
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--accent)', flexShrink: 0 }}>→</span>
+            </button>
+          ))}
         </div>
       )}
     </div>
   )
 }
 
-// ── Bottom Nav (mobile) ───────────────────────────────────────────────────────
+// ── LandingPage — tabbed: Search (instant) | Browse (cascade) ────────────────
+function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }) {
+  const [tab, setTab] = useState('search')  // 'search' | 'browse'
+
+  return (
+    <div className="anim-fade-in">
+      {/* Wordmark */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0, marginBottom: 4 }}>
+          <h1 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 'clamp(40px,9vw,68px)', letterSpacing: '-0.05em', color: 'var(--text)', lineHeight: 1, margin: 0 }}>
+            DWELL
+          </h1>
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--accent)', marginBottom: 10, marginLeft: 6, flexShrink: 0, boxShadow: '0 0 16px var(--accent)' }} />
+        </div>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.2em' }}>
+          GREATER BOSTON TRANSIT INTELLIGENCE
+        </div>
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center' }}>
+          <div style={{ width: 32, height: 1, background: 'var(--accent)' }} />
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+        </div>
+      </div>
+
+      {/* Saved stops — always shown above the tab UI */}
+      {favorites.length > 0 && (
+        <div style={{ marginBottom: 28 }}>
+          <FavoritesPanel favorites={favorites} onOpen={onOpenFav} onRemove={onRemoveFav} />
+        </div>
+      )}
+
+      {/* Tab switcher */}
+      <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid var(--border)' }}>
+        {[['search', 'Search a stop'], ['browse', 'Browse by line']].map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            style={{
+              padding: '10px 20px',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `2px solid ${tab === id ? 'var(--accent)' : 'transparent'}`,
+              color: tab === id ? 'var(--text)' : 'var(--text-dim)',
+              fontFamily: 'var(--mono)', fontSize: 11, fontWeight: tab === id ? 600 : 400,
+              letterSpacing: '0.1em', cursor: 'pointer',
+              transition: 'all 0.14s',
+              marginBottom: -1,   // sit on top of the border-bottom
+            }}
+          >
+            {label.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
+      {/* Search tab — type stop name → tap → instant arrivals, no extra steps */}
+      {tab === 'search' && (
+        <div className="anim-fade-in" style={{ minHeight: 240 }}>
+          <p style={{
+            fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)',
+            letterSpacing: '0.08em', lineHeight: 1.7, marginBottom: 16,
+          }}>
+            Type any stop name. Tap a result to go straight to live arrivals — no extra steps.
+          </p>
+          <QuickSearch onCommit={onCommit} autoFocus />
+        </div>
+      )}
+
+      {/* Browse tab — full Mode → Route → Stop cascade */}
+      {tab === 'browse' && (
+        <div className="anim-fade-in">
+          <SelectorPanel onCommit={onCommit} />
+        </div>
+      )}
+
+      {/* Footer */}
+      <div style={{
+        marginTop: 44, paddingTop: 18, borderTop: '1px solid var(--border)',
+        display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center',
+      }}>
+        {[['about','About'],['feedback','Feedback'],['privacy','Privacy']].map(([id, label]) => (
+          <button key={id} onClick={() => onNavigate(id)} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)',
+            letterSpacing: '0.1em', padding: 0, transition: 'color 0.14s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-dim)'}
+          >{label}</button>
+        ))}
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 14 }}>
+          <DonateButton compact />
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>v{VERSION}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Bottom Nav ────────────────────────────────────────────────────────────────
+// "Pulse" replaced with "Plan" (Next Train Finder)
 const NAV_ITEMS = [
-  { id: 'landing',  icon: '⌂', label: 'Home'   },
-  { id: 'saved',    icon: '★', label: 'Saved'  },
-  { id: 'search',   icon: '⌕', label: 'Search' },
-  { id: 'about',    icon: '◉', label: 'About'  },
+  { id: 'landing', icon: '⌂', label: 'Home'  },
+  { id: 'saved',   icon: '★', label: 'Saved' },
+  { id: 'plan',    icon: '→', label: 'Plan'  },
+  { id: 'about',   icon: '◉', label: 'About' },
 ]
 
 function BottomNav({ page, onNavigate }) {
@@ -218,36 +272,26 @@ function BottomNav({ page, onNavigate }) {
     <nav style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500,
       background: 'rgba(7,8,12,0.97)', backdropFilter: 'blur(20px)',
-      borderTop: '1px solid var(--border)',
-      display: 'flex',
+      borderTop: '1px solid var(--border)', display: 'flex',
     }}>
       {NAV_ITEMS.map(item => {
-        const active = page === item.id ||
+        const active =
+          page === item.id ||
           (item.id === 'landing' && page === 'arrivals') ||
-          (item.id === 'about' && (page === 'feedback' || page === 'privacy'))
+          (item.id === 'about'   && (page === 'feedback' || page === 'privacy'))
         return (
-          <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
+          <button key={item.id} onClick={() => onNavigate(item.id)}
             style={{
               flex: 1, display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: 3,
-              padding: '10px 4px 12px',
-              background: 'transparent', border: 'none', cursor: 'pointer',
+              padding: '10px 4px 12px', background: 'transparent',
+              border: 'none', cursor: 'pointer',
               borderTop: `2px solid ${active ? 'var(--accent)' : 'transparent'}`,
               transition: 'all 0.14s',
             }}
           >
-            <span style={{
-              fontSize: 18, lineHeight: 1,
-              color: active ? 'var(--accent)' : 'var(--text-dim)',
-              transition: 'color 0.14s',
-            }}>{item.icon}</span>
-            <span style={{
-              fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.1em',
-              color: active ? 'var(--accent)' : 'var(--text-dim)',
-              transition: 'color 0.14s',
-            }}>{item.label}</span>
+            <span style={{ fontSize: 18, lineHeight: 1, color: active ? 'var(--accent)' : 'var(--text-dim)', transition: 'color 0.14s' }}>{item.icon}</span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.1em', color: active ? 'var(--accent)' : 'var(--text-dim)', transition: 'color 0.14s' }}>{item.label}</span>
           </button>
         )
       })}
@@ -255,67 +299,66 @@ function BottomNav({ page, onNavigate }) {
   )
 }
 
+// ── Donate ────────────────────────────────────────────────────────────────────
+function DonateButton({ compact }) {
+  return (
+    <a href={DONATE_URL} target="_blank" rel="noopener noreferrer"
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: compact ? 6 : 8,
+        padding: compact ? '5px 12px' : '8px 16px', borderRadius: 999,
+        background: 'transparent', border: '1px solid var(--border)',
+        color: 'var(--text-muted)', fontFamily: 'var(--mono)',
+        fontSize: compact ? 10 : 11, letterSpacing: '0.1em',
+        textDecoration: 'none', transition: 'all 0.14s', cursor: 'pointer', whiteSpace: 'nowrap',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor='#FFDD00'; e.currentTarget.style.color='#FFDD00'; e.currentTarget.style.background='rgba(255,221,0,0.07)' }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.color='var(--text-muted)'; e.currentTarget.style.background='transparent' }}
+    >
+      <span style={{ fontSize: compact ? 13 : 15 }}>☕</span>
+      Buy me a coffee
+    </a>
+  )
+}
+
 // ── Header ────────────────────────────────────────────────────────────────────
-function Header({ onLogoClick }) {
-  const clock = useClock()
+function Header({ onLogoClick, theme, onThemeToggle }) {
+  const clock  = useClock()
+  const isDark = theme === 'dark'
   return (
     <header style={{
       position: 'sticky', top: 0, zIndex: 100,
-      background: 'rgba(7,8,12,0.93)', backdropFilter: 'blur(18px)',
-      borderBottom: '1px solid var(--border)',
-      padding: '0 clamp(16px, 4vw, 40px)',
+      background: isDark ? 'rgba(7,8,12,0.93)' : 'rgba(245,244,239,0.95)',
+      backdropFilter: 'blur(18px)', borderBottom: '1px solid var(--border)',
+      padding: '0 clamp(16px, 4vw, 40px)', transition: 'background 0.25s',
     }}>
-      <div style={{
-        maxWidth: 860, margin: '0 auto',
-        display: 'flex', alignItems: 'center', gap: 16, height: 52,
-      }}>
-        {/* Logo — clickable home */}
+      <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, height: 52 }}>
         <button onClick={onLogoClick} style={{
           display: 'flex', alignItems: 'baseline', gap: 7,
-          background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-          transition: 'opacity 0.14s',
+          background: 'none', border: 'none', cursor: 'pointer', padding: 0, transition: 'opacity 0.14s',
         }}
-          onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+          onMouseEnter={e => e.currentTarget.style.opacity = '0.72'}
           onMouseLeave={e => e.currentTarget.style.opacity = '1'}
         >
-          <span style={{
-            fontFamily: 'var(--display)', fontSize: 22, fontWeight: 800,
-            letterSpacing: '-0.04em', color: 'var(--text)',
-          }}>DWELL</span>
-          <span style={{
-            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.18em',
-            color: 'var(--accent-dim)', padding: '2px 6px',
-            border: '1px solid var(--accent-dim)', borderRadius: 2, lineHeight: 1,
-          }}>MBTA</span>
+          <span style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text)' }}>DWELL</span>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.18em', color: 'var(--accent-dim)', padding: '2px 6px', border: '1px solid var(--accent-dim)', borderRadius: 2, lineHeight: 1 }}>MBTA</span>
         </button>
-
         <div style={{ flex: 1 }} />
-
-        {/* Clock — hidden on very small screens via inline approach */}
-        <span style={{
-          fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)',
-          letterSpacing: '0.1em', display: 'var(--clock-display, block)',
-        }}>
+        <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.1em' }}>
           {clock.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
         </span>
-
-        {/* Version badge */}
-        <span style={{
-          fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-dim)',
-          letterSpacing: '0.08em',
-          display: 'none',
-        }}
-          ref={el => { if (el && window.innerWidth >= 600) el.style.display = 'block' }}
-        >
-          v{VERSION}
-        </span>
-
-        {/* Live */}
+        <button onClick={onThemeToggle} title={isDark ? 'Light mode' : 'Dark mode'}
+          style={{
+            width: 32, height: 32, borderRadius: 'var(--radius-sm)',
+            background: 'var(--bg-3)', border: '1px solid var(--border)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 15, transition: 'all 0.14s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+        >{isDark ? '☀' : '◑'}</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <LiveDot color="#3DBA7F" size={7} />
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--green)', letterSpacing: '0.12em' }}>
-            LIVE
-          </span>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--green)', letterSpacing: '0.12em' }}>LIVE</span>
         </div>
       </div>
     </header>
@@ -323,155 +366,83 @@ function Header({ onLogoClick }) {
 }
 
 // ── App ───────────────────────────────────────────────────────────────────────
-// pages: 'landing' | 'arrivals' | 'saved' | 'search' | 'about' | 'feedback' | 'privacy'
 export default function App() {
   const [page, setPage]           = useState('landing')
   const [selection, setSelection] = useState(null)
+  const { theme, toggle: toggleTheme } = useTheme()
   const { favorites, addFavorite, removeFavorite, isFavorite } = useFavorites()
+  const isDark = theme === 'dark'
 
   const navigate = useCallback((id) => {
-    setPage(id)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setPage(id); window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
-
   const handleCommit = useCallback((sel) => {
-    setSelection(sel)
-    navigate('arrivals')
+    setSelection(sel); navigate('arrivals')
   }, [navigate])
-
   const handleToggleFavorite = useCallback((entry) => {
-    if (isFavorite(entry.stop?.id, entry.route?.id)) {
-      removeFavorite(entry.stop.id, entry.route.id)
-    } else {
-      addFavorite(entry)
-    }
+    isFavorite(entry.stop?.id, entry.route?.id)
+      ? removeFavorite(entry.stop.id, entry.route.id)
+      : addFavorite(entry)
   }, [isFavorite, addFavorite, removeFavorite])
-
-  const handleOpenFavorite = useCallback((fav) => {
-    setSelection(fav)
-    navigate('arrivals')
-  }, [navigate])
 
   const renderPage = () => {
     switch (page) {
       case 'arrivals':
         return (
           <ArrivalsBoard
-            mode={selection?.mode}
-            route={selection?.route}
-            stop={selection?.stop}
-            isFavorite={isFavorite}
-            onToggleFavorite={handleToggleFavorite}
+            mode={selection?.mode} route={selection?.route} stop={selection?.stop}
+            isFavorite={isFavorite} onToggleFavorite={handleToggleFavorite}
             onBack={() => navigate('landing')}
           />
         )
+
       case 'saved':
         return (
           <div className="anim-fade-in">
             <div style={{ paddingLeft: 18, marginBottom: 28, borderLeft: '3px solid var(--accent)' }}>
               <MonoLabel style={{ display: 'block', marginBottom: 8 }}>DWELL</MonoLabel>
-              <h2 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 'clamp(26px,6vw,40px)', letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, margin: 0 }}>
-                Saved Stops
-              </h2>
+              <h2 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 'clamp(26px,6vw,40px)', letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, margin: 0 }}>Saved Stops</h2>
             </div>
             {favorites.length === 0
-              ? (
-                <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>
-                  No saved stops yet — star a stop on the arrivals board to save it here.
+              ? <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.08em', lineHeight: 1.8 }}>
+                  No saved stops yet.<br />Star a stop on the arrivals board to save it here.
                 </div>
-              )
-              : (
-                <FavoritesPanel
-                  favorites={favorites}
-                  onOpen={handleOpenFavorite}
-                  onRemove={removeFavorite}
-                />
-              )
+              : <FavoritesPanel favorites={favorites} onOpen={fav => { setSelection(fav); navigate('arrivals') }} onRemove={removeFavorite} />
             }
+            <div style={{ marginTop: 40, paddingTop: 18, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'center' }}>
+              <DonateButton />
+            </div>
           </div>
         )
-      case 'search':
+
+      case 'plan':
         return (
           <div className="anim-fade-in">
-            <div style={{ paddingLeft: 18, marginBottom: 28, borderLeft: '3px solid var(--accent)' }}>
+            <div style={{ paddingLeft: 18, marginBottom: 20, borderLeft: '3px solid var(--accent)' }}>
               <MonoLabel style={{ display: 'block', marginBottom: 8 }}>DWELL</MonoLabel>
-              <h2 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 'clamp(26px,6vw,40px)', letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, margin: 0 }}>
-                Find a Stop
-              </h2>
+              <h2 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 'clamp(26px,6vw,40px)', letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1, margin: 0 }}>Next Train</h2>
+              <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)', marginTop: 8, lineHeight: 1.7, letterSpacing: '0.04em' }}>
+                Enter any two stops to see direct connections with live departure times and ride duration.
+              </p>
             </div>
-            <QuickSearch onCommit={handleCommit} />
-            <div style={{ height: 1, background: 'var(--border)', marginBottom: 32 }} />
-            <SelectorPanel onCommit={handleCommit} />
+            <div style={{ height: 1, background: 'var(--border)', marginBottom: 24 }} />
+            <NextTrain />
           </div>
         )
-      case 'about':    return <AboutPage />
+
+      case 'about':    return <AboutPage onNavigate={navigate} />
       case 'feedback': return <FeedbackPage />
       case 'privacy':  return <PrivacyPage />
 
-      default: // 'landing'
+      default: // landing
         return (
-          <div className="anim-fade-in">
-            {/* Wordmark */}
-            <div style={{ marginBottom: 40 }}>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0, marginBottom: 5 }}>
-                <h1 style={{
-                  fontFamily: 'var(--display)', fontWeight: 800,
-                  fontSize: 'clamp(40px, 9vw, 68px)', letterSpacing: '-0.05em',
-                  color: 'var(--text)', lineHeight: 1, margin: 0,
-                }}>DWELL</h1>
-                <span style={{
-                  width: 10, height: 10, borderRadius: '50%',
-                  background: 'var(--accent)', marginBottom: 10, marginLeft: 6,
-                  flexShrink: 0, boxShadow: '0 0 16px var(--accent)',
-                }} />
-              </div>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.2em' }}>
-                GREATER BOSTON TRANSIT INTELLIGENCE
-              </div>
-              <div style={{ marginTop: 18, display: 'flex', alignItems: 'center' }}>
-                <div style={{ width: 32, height: 1, background: 'var(--accent)' }} />
-                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-              </div>
-            </div>
-
-            {/* Quick search */}
-            <QuickSearch onCommit={handleCommit} />
-
-            {/* Favorites */}
-            {favorites.length > 0 && (
-              <>
-                <FavoritesPanel
-                  favorites={favorites}
-                  onOpen={handleOpenFavorite}
-                  onRemove={removeFavorite}
-                />
-                <div style={{ height: 1, background: 'var(--border)', margin: '32px 0' }} />
-              </>
-            )}
-
-            {/* Full selector */}
-            <MonoLabel style={{ display: 'block', marginBottom: 20 }}>Browse by line</MonoLabel>
-            <SelectorPanel onCommit={handleCommit} />
-
-            {/* Footer links */}
-            <div style={{
-              marginTop: 48, paddingTop: 20, borderTop: '1px solid var(--border)',
-              display: 'flex', gap: 20, flexWrap: 'wrap',
-              fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.1em',
-            }}>
-              {[['about','About'], ['feedback','Feedback'], ['privacy','Privacy']].map(([id, label]) => (
-                <button key={id} onClick={() => navigate(id)} style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)',
-                  letterSpacing: '0.1em', padding: 0, transition: 'color 0.14s',
-                }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-dim)'}
-                >{label}</button>
-              ))}
-              <span style={{ marginLeft: 'auto' }}>v{VERSION}</span>
-            </div>
-          </div>
+          <LandingPage
+            favorites={favorites}
+            onCommit={handleCommit}
+            onOpenFav={fav => { setSelection(fav); navigate('arrivals') }}
+            onRemoveFav={removeFavorite}
+            onNavigate={navigate}
+          />
         )
     }
   }
@@ -479,23 +450,21 @@ export default function App() {
   return (
     <>
       <Scanlines />
-      <div style={{
-        position: 'fixed', top: -100, left: '50%', transform: 'translateX(-50%)',
-        width: '50vw', height: 200,
-        background: 'radial-gradient(ellipse, rgba(232,197,71,0.055) 0%, transparent 70%)',
-        pointerEvents: 'none', zIndex: 0,
-      }} />
-
-      <Header onLogoClick={() => navigate('landing')} />
-
+      {isDark && (
+        <div style={{
+          position: 'fixed', top: -100, left: '50%', transform: 'translateX(-50%)',
+          width: '50vw', height: 200,
+          background: 'radial-gradient(ellipse, rgba(232,197,71,0.055) 0%, transparent 70%)',
+          pointerEvents: 'none', zIndex: 0,
+        }} />
+      )}
+      <Header onLogoClick={() => navigate('landing')} theme={theme} onThemeToggle={toggleTheme} />
       <main style={{
-        position: 'relative', zIndex: 1,
-        maxWidth: 860, margin: '0 auto',
-        padding: 'clamp(24px, 4vw, 44px) clamp(16px, 4vw, 40px) 100px',
+        position: 'relative', zIndex: 1, maxWidth: 860, margin: '0 auto',
+        padding: 'clamp(24px,4vw,44px) clamp(16px,4vw,40px) 100px',
       }}>
         {renderPage()}
       </main>
-
       <BottomNav page={page} onNavigate={navigate} />
     </>
   )
