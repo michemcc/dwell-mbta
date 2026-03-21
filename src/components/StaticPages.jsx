@@ -89,13 +89,13 @@ export function AboutPage({ onNavigate }) {
 }
 
 // ── Feedback ──────────────────────────────────────────────────────────────────
-// Sends via Netlify serverless function so RESEND_API_KEY stays server-side.
-// Set RESEND_API_KEY, FEEDBACK_TO_EMAIL, FEEDBACK_FROM_EMAIL in Netlify env vars.
+// Sends via Vercel serverless function so RESEND_API_KEY stays server-side.
+// Set RESEND_API_KEY, FEEDBACK_TO_EMAIL, FEEDBACK_FROM_EMAIL in Vercel env vars.
 
 const FEEDBACK_TO = import.meta.env.VITE_FEEDBACK_TO_EMAIL || 'feedback@yourdomain.com'
 
 async function sendViaResend({ type, message }) {
-  const res = await fetch('/.netlify/functions/send-feedback', {
+  const res = await fetch('/api/send-feedback', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type, message, version: VERSION }),

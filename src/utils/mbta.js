@@ -1,16 +1,16 @@
 // ── MBTA API client ───────────────────────────────────────────────────────────
-// In production (Netlify), all requests are routed through
-// /.netlify/functions/mbta so the API key stays on the server.
-// In local dev (Vite), VITE_MBTA_API_KEY is used directly — the function
-// server (netlify dev) also works locally if you prefer.
+// In production (Vercel), all requests are routed through /api/mbta so the
+// API key stays on the server and is never sent to the browser.
+// In local dev (Vite), VITE_MBTA_API_KEY is used directly for speed.
+// To test the serverless function locally: run `vercel dev` instead of `npm run dev`.
 
-const IS_DEV   = import.meta.env.DEV
-const DEV_KEY  = import.meta.env.VITE_MBTA_API_KEY || ''
+const IS_DEV  = import.meta.env.DEV
+const DEV_KEY = import.meta.env.VITE_MBTA_API_KEY || ''
 const MBTA_BASE = 'https://api-v3.mbta.com'
 
 export async function mbtaFetch(path) {
   if (IS_DEV && DEV_KEY) {
-    // Local dev: hit MBTA directly with the key from .env
+    // Local dev: call MBTA directly with key from .env
     const sep = path.includes('?') ? '&' : '?'
     const url = `${MBTA_BASE}${path}${sep}api_key=${DEV_KEY}`
     const res = await fetch(url, {
@@ -21,8 +21,8 @@ export async function mbtaFetch(path) {
     return res.json()
   }
 
-  // Production: proxy through Netlify function (API key stays server-side)
-  const url = `/.netlify/functions/mbta?path=${encodeURIComponent(path)}`
+  // Production: proxy through Vercel serverless function (key stays server-side)
+  const url = `/api/mbta?path=${encodeURIComponent(path)}`
   const res = await fetch(url, { signal: AbortSignal.timeout(12000) })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
