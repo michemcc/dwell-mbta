@@ -9,9 +9,9 @@
   --bg-3:        #0E1118;
   --bg-4:        #14171F;
 
-  --text:        #F0F1F3;
-  --text-muted:  #8C93A4;
-  --text-dim:    #454D60;
+  --text:        #F2F3F5;        /* already bright, tiny lift */
+  --text-muted:  #A0A8BA;        /* was #8C93A4 — lifted ~15% brighter */
+  --text-dim:    #626878;        /* was #454D60 — lifted ~25% brighter */
 
   --accent:      #F2CA45;
   --accent-dim:  #886F1E;
@@ -25,6 +25,10 @@
   --border-mid:  rgba(255,255,255,0.14);
   --shadow:      rgba(0,0,0,0.75);
   --scanline:    rgba(0,0,0,0.016);
+
+  /* Nav bar — distinct surface with clear text */
+  --nav-bg:      rgba(5,6,10,0.96);
+  --nav-text:    #B0B6C4;
 }
 
 /* ── Light theme ─────────────────────────────────────────────────── */
@@ -43,9 +47,13 @@
   --red:         #C42828;
   --orange:      #C06018;
   --border:      rgba(0,0,0,0.09);
-  --border-mid:  rgba(0,0,0,0.15);
+  --border-mid:  rgba(0,0,0,0.18);
   --shadow:      rgba(0,0,0,0.12);
   --scanline:    transparent;
+
+  /* Nav bar — solid light surface with high-contrast text */
+  --nav-bg:      rgba(230,228,222,0.97);
+  --nav-text:    #2C2D33;
 }
 
 /* ── Tokens ───────────────────────────────────────────────────────── */

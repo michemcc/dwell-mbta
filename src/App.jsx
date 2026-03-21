@@ -8,7 +8,7 @@ import NextTrain from './components/NextTrain'
 import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.3.0'
+const VERSION = '2026.3.3'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────
@@ -279,34 +279,89 @@ const NAV_ITEMS = [
   { id: 'about',   icon: '◉', label: 'About' },
 ]
 
+function useIsMobile() {
+  const [mobile, setMobile] = React.useState(() => window.innerWidth < 768)
+  React.useEffect(() => {
+    const h = () => setMobile(window.innerWidth < 768)
+    window.addEventListener('resize', h)
+    return () => window.removeEventListener('resize', h)
+  }, [])
+  return mobile
+}
+
 function BottomNav({ page, onNavigate }) {
+  const isMobile = useIsMobile()
+
+  const isActive = (id) =>
+    page === id ||
+    (id === 'landing' && page === 'arrivals') ||
+    (id === 'about'   && (page === 'feedback' || page === 'privacy'))
+
+  // Mobile: fixed bottom tab bar
+  if (isMobile) {
+    return (
+      <nav style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500,
+        background: 'var(--nav-bg)',
+        backdropFilter: 'blur(24px) saturate(1.3)',
+        WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
+        borderTop: '1px solid var(--border-mid)', display: 'flex',
+      }}>
+        {NAV_ITEMS.map(item => {
+          const active = isActive(item.id)
+          return (
+            <button key={item.id} onClick={() => onNavigate(item.id)}
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 3,
+                padding: '10px 4px 12px', background: 'transparent',
+                border: 'none', cursor: 'pointer',
+                borderTop: `2px solid ${active ? 'var(--accent)' : 'transparent'}`,
+                transition: 'all 0.14s',
+              }}
+            >
+              <span style={{ fontSize: 18, lineHeight: 1, color: active ? 'var(--accent)' : 'var(--nav-text)', transition: 'color 0.14s' }}>{item.icon}</span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.1em', color: active ? 'var(--accent)' : 'var(--nav-text)', transition: 'color 0.14s' }}>{item.label}</span>
+            </button>
+          )
+        })}
+      </nav>
+    )
+  }
+
+  // Desktop: horizontal link strip at the bottom of the viewport, minimal
   return (
     <nav style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500,
-      background: 'rgba(6,7,9,0.90)',
-      backdropFilter: 'blur(24px) saturate(1.3)',
-      WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
-      borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex',
+      borderTop: '1px solid var(--border-mid)',
+      background: 'var(--nav-bg)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap: 0, height: 40,
     }}>
-      {NAV_ITEMS.map(item => {
-        const active =
-          page === item.id ||
-          (item.id === 'landing' && page === 'arrivals') ||
-          (item.id === 'about'   && (page === 'feedback' || page === 'privacy'))
+      {NAV_ITEMS.map((item, i) => {
+        const active = isActive(item.id)
         return (
-          <button key={item.id} onClick={() => onNavigate(item.id)}
-            style={{
-              flex: 1, display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', gap: 3,
-              padding: '10px 4px 12px', background: 'transparent',
-              border: 'none', cursor: 'pointer',
-              borderTop: `2px solid ${active ? 'var(--accent)' : 'transparent'}`,
-              transition: 'all 0.14s',
-            }}
-          >
-            <span style={{ fontSize: 18, lineHeight: 1, color: active ? 'var(--accent)' : 'var(--text-dim)', transition: 'color 0.14s' }}>{item.icon}</span>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.1em', color: active ? 'var(--accent)' : 'var(--text-dim)', transition: 'color 0.14s' }}>{item.label}</span>
-          </button>
+          <React.Fragment key={item.id}>
+            {i > 0 && <span style={{ width: 1, height: 14, background: 'var(--border)', flexShrink: 0 }} />}
+            <button onClick={() => onNavigate(item.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '0 20px', height: '100%',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.1em',
+                color: active ? 'var(--accent)' : 'var(--nav-text)',
+                transition: 'color 0.14s',
+                borderBottom: `2px solid ${active ? 'var(--accent)' : 'transparent'}`,
+              }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'var(--text)' }}
+              onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'var(--nav-text)' }}
+            >
+              <span style={{ fontSize: 13 }}>{item.icon}</span>
+              {item.label.toUpperCase()}
+            </button>
+          </React.Fragment>
         )
       })}
     </nav>
@@ -336,8 +391,9 @@ function DonateButton({ compact }) {
 
 // ── Header ────────────────────────────────────────────────────────────────────
 function Header({ onLogoClick, theme, onThemeToggle }) {
-  const clock  = useClock()
-  const isDark = theme === 'dark'
+  const clock   = useClock()
+  const isDark  = theme === 'dark'
+  const isMobile = useIsMobile()
   return (
     <header style={{
       position: 'sticky', top: 2, zIndex: 100,
@@ -345,11 +401,13 @@ function Header({ onLogoClick, theme, onThemeToggle }) {
       backdropFilter: 'blur(22px) saturate(1.4)',
       WebkitBackdropFilter: 'blur(22px) saturate(1.4)',
       borderBottom: '1px solid var(--border)',
-      padding: '0 clamp(16px, 4vw, 40px)', transition: 'background 0.25s',
+      padding: '0 clamp(14px, 4vw, 40px)', transition: 'background 0.25s',
     }}>
-      <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, height: 52 }}>
+      <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10, height: 50 }}>
+
+        {/* Logo — always visible */}
         <button onClick={onLogoClick} style={{
-          display: 'flex', alignItems: 'baseline', gap: 7,
+          display: 'flex', alignItems: 'baseline', gap: 7, flexShrink: 0,
           background: 'none', border: 'none', cursor: 'pointer', padding: 0, transition: 'opacity 0.14s',
         }}
           onMouseEnter={e => e.currentTarget.style.opacity = '0.72'}
@@ -358,24 +416,51 @@ function Header({ onLogoClick, theme, onThemeToggle }) {
           <span style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text)' }}>DWELL</span>
           <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.18em', color: 'var(--accent-dim)', padding: '2px 6px', border: '1px solid var(--accent-dim)', borderRadius: 2, lineHeight: 1 }}>MBTA</span>
         </button>
+
         <div style={{ flex: 1 }} />
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.1em' }}>
-          {clock.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-        </span>
-        <button onClick={onThemeToggle} title={isDark ? 'Light mode' : 'Dark mode'}
+
+        {/* Clock — desktop only */}
+        {!isMobile && (
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.1em', flexShrink: 0 }}>
+            {clock.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          </span>
+        )}
+
+        {/* Theme toggle — icon-only on mobile, icon+label on desktop */}
+        <button onClick={onThemeToggle} title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           style={{
-            width: 32, height: 32, borderRadius: 'var(--radius-sm)',
-            background: 'var(--bg-3)', border: '1px solid var(--border)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 15, transition: 'all 0.14s',
+            display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+            padding: isMobile ? '6px 8px' : '5px 10px',
+            borderRadius: 'var(--radius-sm)',
+            background: isDark ? 'rgba(242,202,69,0.12)' : 'var(--bg-3)',
+            border: isDark ? '1px solid rgba(242,202,69,0.35)' : '1px solid var(--border)',
+            cursor: 'pointer', transition: 'all 0.16s',
+            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em',
+            color: isDark ? '#F2CA45' : 'var(--text-muted)',
           }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
-        >{isDark ? '☀' : '◑'}</button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <LiveDot color="#3DBA7F" size={7} />
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--green)', letterSpacing: '0.12em' }}>LIVE</span>
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = 'var(--accent)'
+            e.currentTarget.style.background = 'rgba(242,202,69,0.18)'
+            e.currentTarget.style.color = 'var(--accent)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = isDark ? 'rgba(242,202,69,0.35)' : 'var(--border)'
+            e.currentTarget.style.background = isDark ? 'rgba(242,202,69,0.12)' : 'var(--bg-3)'
+            e.currentTarget.style.color = isDark ? '#F2CA45' : 'var(--text-muted)'
+          }}
+        >
+          <span style={{ fontSize: 13, lineHeight: 1 }}>{isDark ? '☀' : '◑'}</span>
+          {!isMobile && <span>{isDark ? 'LIGHT' : 'DARK'}</span>}
+        </button>
+
+        {/* Live indicator — dot only on mobile, dot+text on desktop */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+          <LiveDot color="#3FCF84" size={7} />
+          {!isMobile && (
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--green)', letterSpacing: '0.12em' }}>LIVE</span>
+          )}
         </div>
+
       </div>
     </header>
   )

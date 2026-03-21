@@ -89,32 +89,20 @@ export function AboutPage({ onNavigate }) {
 }
 
 // ── Feedback ──────────────────────────────────────────────────────────────────
-// Uses Resend (https://resend.com) to send feedback emails.
-// Add VITE_RESEND_API_KEY and VITE_FEEDBACK_TO_EMAIL to your .env file.
-// Resend free tier: 100 emails/day, 3,000/month — plenty for a personal app.
-const RESEND_API_KEY  = import.meta.env.VITE_RESEND_API_KEY  || ''
-const FEEDBACK_TO     = import.meta.env.VITE_FEEDBACK_TO_EMAIL || 'feedback@yourdomain.com'
-const FEEDBACK_FROM   = import.meta.env.VITE_FEEDBACK_FROM_EMAIL || 'dwell@yourdomain.com'
+// Sends via Netlify serverless function so RESEND_API_KEY stays server-side.
+// Set RESEND_API_KEY, FEEDBACK_TO_EMAIL, FEEDBACK_FROM_EMAIL in Netlify env vars.
+
+const FEEDBACK_TO = import.meta.env.VITE_FEEDBACK_TO_EMAIL || 'feedback@yourdomain.com'
 
 async function sendViaResend({ type, message }) {
-  if (!RESEND_API_KEY) throw new Error('No Resend API key configured')
-  const res = await fetch('https://api.resend.com/emails', {
+  const res = await fetch('/.netlify/functions/send-feedback', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: `DWELL Feedback <${FEEDBACK_FROM}>`,
-      to:   [FEEDBACK_TO],
-      subject: `DWELL Feedback — ${type}`,
-      text: `${message}\n\n---\nDWELL ${VERSION}`,
-      html: `<p>${message.replace(/\n/g, '<br>')}</p><hr><p style="color:#888">DWELL ${VERSION}</p>`,
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, message, version: VERSION }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(err.message || `Resend ${res.status}`)
+    throw new Error(err.error || 'Send failed (' + res.status + ')')
   }
   return true
 }
@@ -123,8 +111,6 @@ export function FeedbackPage() {
   const [status, setStatus]   = React.useState('idle') // idle | sending | success | error
   const [errMsg, setErrMsg]   = React.useState('')
   const [form, setForm]       = React.useState({ type: 'bug', message: '' })
-  const hasResend = !!RESEND_API_KEY
-
   const types = [
     { id: 'bug',     label: 'Bug report' },
     { id: 'feature', label: 'Feature request' },
@@ -136,21 +122,13 @@ export function FeedbackPage() {
     if (!form.message.trim()) return
     const typeLabel = types.find(t => t.id === form.type)?.label || form.type
 
-    if (hasResend) {
-      setStatus('sending')
-      try {
-        await sendViaResend({ type: typeLabel, message: form.message })
-        setStatus('success')
-      } catch (e) {
-        setErrMsg(e.message)
-        setStatus('error')
-      }
-    } else {
-      // Fallback to mailto when no Resend key is configured
-      const subject = encodeURIComponent(`DWELL Feedback — ${typeLabel}`)
-      const body    = encodeURIComponent(form.message + `\n\n---\nDWELL ${VERSION}`)
-      window.open(`mailto:${FEEDBACK_TO}?subject=${subject}&body=${body}`)
+    setStatus('sending')
+    try {
+      await sendViaResend({ type: typeLabel, message: form.message })
       setStatus('success')
+    } catch (e) {
+      setErrMsg(e.message)
+      setStatus('error')
     }
   }
 
@@ -167,7 +145,7 @@ export function FeedbackPage() {
             Feedback received
           </div>
           <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', marginBottom: 20 }}>
-            {hasResend ? 'Sent via Resend.' : 'Your mail client should have opened.'}
+            Feedback sent successfully.
           </div>
           <button onClick={() => { setStatus('idle'); setForm({ type: 'bug', message: '' }) }}
             style={{
@@ -186,7 +164,7 @@ export function FeedbackPage() {
     <PageShell title="Feedback" label="DWELL">
       <P>
         Found a bug? Have a feature request? Something look off with the data?
-        Use the form below — it opens your mail client with the details pre-filled.
+        Use the form below to send us a message.
       </P>
 
       {/* Type selector */}
@@ -231,31 +209,14 @@ export function FeedbackPage() {
           borderLeft: '3px solid var(--red)', borderRadius: 'var(--radius-sm)',
           fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--red)', lineHeight: 1.5,
         }}>
-          ⚠ {errMsg || 'Send failed.'} — check your Resend key in .env or{' '}
-          <a href={`mailto:${FEEDBACK_TO}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-            email directly
-          </a>.
+          ⚠ {errMsg || 'Send failed — please try again.'}
         </div>
       )}
-
-      {/* Resend key missing notice */}
-      {!hasResend && (
-        <div style={{
-          padding: '8px 12px', marginBottom: 14,
-          background: 'var(--bg-3)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-sm)',
-          fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', lineHeight: 1.6,
-        }}>
-          No Resend key found — will open your mail client instead.{' '}
-          Add <code style={{ color: 'var(--accent)' }}>VITE_RESEND_API_KEY</code> to .env to send directly.
-        </div>
-      )}
-
       <button
         onClick={handleSubmit}
         disabled={status === 'sending' || !form.message.trim()}
         style={{
-          padding: '12px 28px', background: 'var(--accent)', color: '#07080C',
+          padding: '12px 28px', background: 'var(--accent)', color: 'var(--accent-text)',
           border: 'none', borderRadius: 'var(--radius-sm)',
           cursor: status === 'sending' || !form.message.trim() ? 'default' : 'pointer',
           fontFamily: 'var(--display)', fontSize: 14, fontWeight: 800,
@@ -264,7 +225,7 @@ export function FeedbackPage() {
           display: 'flex', alignItems: 'center', gap: 8,
         }}
         onMouseEnter={e => { if (form.message.trim() && status !== 'sending') e.currentTarget.style.opacity = '0.85' }}
-        onMouseLeave={e => e.currentTarget.style.opacity = form.message.trim() && status !== 'sending' ? '1' : '0.4'}
+        onMouseLeave={e => { e.currentTarget.style.opacity = form.message.trim() && status !== 'sending' ? '1' : '0.4' }}
       >
         {status === 'sending' ? 'SENDING…' : 'SEND FEEDBACK →'}
       </button>
@@ -280,54 +241,29 @@ export function PrivacyPage() {
         DWELL is designed to respect your privacy. This policy explains what data is collected,
         what is not, and how the app operates.
       </P>
-
-      <H>Data we do not collect</H>
+      <H>What we collect</H>
       <P>
-        DWELL does not collect personal information. There are no user accounts, no sign-in, no
-        tracking cookies, and no analytics. We do not know who you are or which stops you look up.
+        DWELL does not collect, store, or transmit any personal information.
+        All transit data is fetched directly from the MBTA API and displayed in your browser.
+        No analytics, tracking pixels, or third-party scripts are loaded.
       </P>
-
       <H>Local storage</H>
       <P>
-        Saved stops (favorites) are stored in your browser's <code style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--accent)', background: 'var(--bg-3)', padding: '1px 5px', borderRadius: 3 }}>localStorage</code>.
-        This data never leaves your device. Clearing your browser data will remove saved stops.
+        DWELL stores your saved stops and theme preference in your browser's local storage.
+        This data never leaves your device.
       </P>
-
-      <H>MBTA API</H>
+      <H>Feedback form</H>
       <P>
-        DWELL makes requests to the{' '}
-        <A href="https://api-v3.mbta.com/">MBTA API v3</A> to fetch route, stop, and
-        prediction data. These requests include your MBTA API key (configured by you) and
-        standard browser metadata such as your IP address, as is normal for any web request.
-        The MBTA's own{' '}
-        <A href="https://www.mbta.com/policies/privacy-policy">privacy policy</A> applies to
-        those requests.
+        If you submit feedback, your message is sent to us via Resend.
+        We only receive the text you type — no IP address, device info, or identifying data is attached.
       </P>
-
-      <H>OpenStreetMap tiles</H>
+      <H>Data source</H>
       <P>
-        Stop maps are rendered using tiles from{' '}
-        <A href="https://www.openstreetmap.org/">OpenStreetMap</A>. Your browser requests
-        these tiles directly from OSM tile servers. The{' '}
-        <A href="https://wiki.openstreetmap.org/wiki/Privacy_Policy">OSM privacy policy</A>{' '}
-        applies to those requests.
+        All transit data is provided by the{' '}
+        <A href="https://www.mbta.com/">Massachusetts Bay Transportation Authority (MBTA)</A>.
+        DWELL is an independent project and is not affiliated with or endorsed by the MBTA.
+        Prediction accuracy depends on real-time vehicle reporting and may vary.
       </P>
-
-      <H>No third-party advertising</H>
-      <P>
-        DWELL contains no advertising and shares no data with advertising networks.
-      </P>
-
-      <H>Contact</H>
-      <P>
-        Questions about this policy? Use the{' '}
-        <A href="mailto:feedback@yourdomain.com">Feedback</A> page or email directly.
-      </P>
-
-      <Divider style={{ marginTop: 32, marginBottom: 16 }} />
-      <p style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>
-        DWELL {VERSION} · Last updated {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
-      </p>
     </PageShell>
   )
 }

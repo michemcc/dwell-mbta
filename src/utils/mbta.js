@@ -1,15 +1,33 @@
-// ── MBTA API v3 ───────────────────────────────────────────────────────────────
-export const MBTA_API_KEY = import.meta.env.VITE_MBTA_API_KEY || 'YOUR_MBTA_API_KEY_HERE'
-const BASE = 'https://api-v3.mbta.com'
+// ── MBTA API client ───────────────────────────────────────────────────────────
+// In production (Netlify), all requests are routed through
+// /.netlify/functions/mbta so the API key stays on the server.
+// In local dev (Vite), VITE_MBTA_API_KEY is used directly — the function
+// server (netlify dev) also works locally if you prefer.
+
+const IS_DEV   = import.meta.env.DEV
+const DEV_KEY  = import.meta.env.VITE_MBTA_API_KEY || ''
+const MBTA_BASE = 'https://api-v3.mbta.com'
 
 export async function mbtaFetch(path) {
-  const sep = path.includes('?') ? '&' : '?'
-  const url = `${BASE}${path}${sep}api_key=${MBTA_API_KEY}`
-  const res = await fetch(url, {
-    headers: { Accept: 'application/json' },
-    signal: AbortSignal.timeout(10000),
-  })
-  if (!res.ok) throw new Error(`MBTA ${res.status} — ${res.statusText}`)
+  if (IS_DEV && DEV_KEY) {
+    // Local dev: hit MBTA directly with the key from .env
+    const sep = path.includes('?') ? '&' : '?'
+    const url = `${MBTA_BASE}${path}${sep}api_key=${DEV_KEY}`
+    const res = await fetch(url, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) throw new Error(`MBTA ${res.status} — ${res.statusText}`)
+    return res.json()
+  }
+
+  // Production: proxy through Netlify function (API key stays server-side)
+  const url = `/.netlify/functions/mbta?path=${encodeURIComponent(path)}`
+  const res = await fetch(url, { signal: AbortSignal.timeout(12000) })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || `Proxy ${res.status}`)
+  }
   return res.json()
 }
 
@@ -37,6 +55,7 @@ export const LINE_COLORS = {
 
 export function getLineColor(routeId = '') {
   if (routeId.startsWith('Green')) return LINE_COLORS['Green']
+  if (routeId.startsWith('CR-'))   return LINE_COLORS['CR']
   return LINE_COLORS[routeId] || LINE_COLORS['Bus']
 }
 
@@ -54,12 +73,15 @@ export function formatCountdown(isoTime) {
   return { label: `${Math.floor(m / 60)}h ${m % 60}m`, tier: 'far', seconds: diff }
 }
 
+// Countdown colors use CSS variables so they are correct in both light and dark mode.
+// boarding/now/soon are vivid enough to work on any background.
+// ok/far/gone reference theme variables so light mode text stays readable.
 export const COUNTDOWN_COLORS = {
-  boarding:  '#E8504A',
-  now:       '#E8843A',
-  soon:      '#E8C547',
-  ok:        '#DFE0E3',
-  far:       '#7A7F8E',
-  gone:      '#3D4150',
-  unknown:   '#3D4150',
+  boarding: '#F05555',
+  now:      '#F09040',
+  soon:     '#F2CA45',
+  ok:       'var(--text)',          // full text color — always readable
+  far:      'var(--text-muted)',    // muted but readable in both modes
+  gone:     'var(--text-dim)',      // dim — departed trains
+  unknown:  'var(--text-dim)',
 }

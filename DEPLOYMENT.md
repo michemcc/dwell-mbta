@@ -176,3 +176,18 @@ CNAME (www)       →    yoursite.netlify.app
 
 Total cost: ~$12–15/year (domain) + $0 (Netlify free tier) + $0 (Resend free tier).
 
+
+## Part 6 — SEO checklist after going live
+
+1. **Update your domain** — `index.html`, `robots.txt`, and `sitemap.xml` all reference `dwellmbta.com`. Replace that with your actual domain before deploying.
+
+2. **Create an OG image** — social link previews need `/public/og-image.png` (1200×630px). Without it, link previews will have no image. Design one in Canva or Figma with the DWELL wordmark on a dark background.
+
+3. **Submit to Google Search Console**
+   - Go to [search.google.com/search-console](https://search.google.com/search-console)
+   - Add your domain property and verify via the DNS TXT record in Route 53
+   - Submit `https://yourdomain.com/sitemap.xml`
+   - Use "URL Inspection" to request indexing of your homepage
+
+4. **Verify structured data** — paste your live URL into [search.google.com/test/rich-results](https://search.google.com/test/rich-results) to confirm the WebApplication schema is picked up correctly.
+
