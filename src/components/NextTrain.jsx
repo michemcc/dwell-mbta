@@ -25,7 +25,6 @@ function StopPicker({ label, value, onSelect, placeholder }) {
       <div style={{ position: 'relative' }}>
         <input ref={inputRef} value={query}
           onChange={e => { setQuery(e.target.value); onSelect(null); setOpen(true) }}
-          onFocus={() => setOpen(true)}
           placeholder={placeholder}
           style={{
             width: '100%', background: 'var(--bg-3)',
@@ -34,7 +33,7 @@ function StopPicker({ label, value, onSelect, placeholder }) {
             fontFamily: 'var(--mono)', fontSize: 12, padding: '10px 28px 10px 12px',
             letterSpacing: '0.04em', outline: 'none',
           }}
-          onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+          onFocus={e => { setOpen(true); e.target.style.borderColor = 'var(--accent)' }}
           onBlur={e => e.target.style.borderColor = 'var(--border)'}
         />
         {value && (
@@ -228,130 +227,180 @@ function LegDetail({ leg, lc, isLast }) {
 
 // ── Transfer routing helpers ──────────────────────────────────────────────────
 // Find transfer stops: stops that serve routes from BOTH sets
+// Known MBTA transfer hubs — parent station IDs.
+// Checking these first avoids hundreds of API calls.
+const TRANSFER_HUBS = [
+  'place-north',  // North Station  (CR + Orange + Green)
+  'place-sstat',  // South Station  (CR + Red + Silver)
+  'place-dwnxg',  // Downtown Crossing (Red + Orange + Silver)
+  'place-pktrm',  // Park Street   (Red + Green)
+  'place-gover',  // Government Center (Blue + Green)
+  'place-state',  // State          (Orange + Blue)
+  'place-haecl',  // Haymarket     (Orange + Green)
+  'place-boyls',  // Boylston      (Green)
+  'place-armnl',  // Arlington     (Green)
+  'place-coecl',  // Copley        (Green)
+  'place-hymnl',  // Hynes         (Green)
+  'place-kencl',  // Kenmore       (Green)
+  'place-jfk',    // JFK/UMass     (Red)
+  'place-forhl',  // Forest Hills  (Orange + CR)
+  'place-rugg',   // Ruggles       (Orange + CR)
+  'place-bbsta',  // Back Bay      (Orange + CR)
+  'place-masta',  // Massachusetts Ave (Orange)
+  'place-ogmnl',  // Oak Grove     (Orange)
+  'place-asmnl',  // Alewife       (Red)
+]
+
+async function resolveParentStop(rawStop) {
+  const parentId = rawStop.relationships?.parent_station?.data?.id
+  if (!parentId) return rawStop
+  try {
+    const d = await mbtaFetch(`/stops/${parentId}`)
+    return d.data || rawStop
+  } catch { return rawStop }
+}
+
+// Get routes serving a stop, using parent station ID for reliability
+async function getRoutesForStop(stopId) {
+  const d = await mbtaFetch(`/routes?filter[stop]=${stopId}&sort=sort_order`)
+  return d.data || []
+}
+
 async function findTransferJourneys(fromStop, toStop, fromRoutes, toRoutes, toRouteIds) {
   const results = []
 
-  // For each fromRoute, find all its stops and check if any of those stops
-  // also serve a toRoute
-  await Promise.all(fromRoutes.slice(0, 6).map(async fromRoute => {
+  // Strategy: check known transfer hubs first (fast), then fall back to
+  // scanning each fromRoute's stops (thorough but slow).
+  
+  // Build a Set of fromRoute IDs for quick lookup
+  const fromRouteIds = new Set(fromRoutes.map(r => r.id))
+
+  // Step 1: check known hubs — if a hub serves both a fromRoute and a toRoute, it's a transfer
+  const hubCandidates = []
+  await Promise.all(TRANSFER_HUBS.map(async hubId => {
+    // Skip if hub is the origin or destination
+    if (hubId === fromStop.id || hubId === toStop.id) return
     try {
-      // Get stops on the fromRoute
-      const fromStopsData = await mbtaFetch(`/stops?filter[route]=${fromRoute.id}`)
-      const fromRouteStops = fromStopsData.data || []
-
-      // For each stop on the fromRoute, check which toRoutes also serve it
-      const transferCandidates = []
-      for (const transferStop of fromRouteStops) {
-        // Don't transfer at the origin
-        if (transferStop.id === fromStop.id) continue
-        try {
-          const transferRoutesData = await mbtaFetch(`/routes?filter[stop]=${transferStop.id}&sort=sort_order`)
-          const transferRouteIds = (transferRoutesData.data || []).map(r => r.id)
-          // Find toRoutes that also serve this stop
-          const connectingRoutes = (transferRoutesData.data || []).filter(r => toRouteIds.has(r.id))
-          if (connectingRoutes.length > 0) {
-            transferCandidates.push({ transferStop, connectingRoutes })
-          }
-        } catch {}
+      const hubRoutes = await getRoutesForStop(hubId)
+      const servesFrom = hubRoutes.some(r => fromRouteIds.has(r.id))
+      const toRoute    = hubRoutes.find(r => toRouteIds.has(r.id))
+      const fromRoute  = hubRoutes.find(r => fromRouteIds.has(r.id))
+      if (servesFrom && toRoute && fromRoute) {
+        hubCandidates.push({ hubId, fromRoute, toRoute })
       }
+    } catch {}
+  }))
 
-      if (transferCandidates.length === 0) return
+  // Step 2: if no hub candidates, scan fromRoute stops (slower)
+  const routeCandidates = []
+  if (hubCandidates.length === 0) {
+    await Promise.all(fromRoutes.slice(0, 4).map(async fromRoute => {
+      try {
+        const fromStopsData = await mbtaFetch(`/stops?filter[route]=${fromRoute.id}`)
+        const rawStops = fromStopsData.data || []
+        // Deduplicate by parent station
+        const stationMap = new Map()
+        for (const s of rawStops) {
+          const pid = s.relationships?.parent_station?.data?.id || s.id
+          if (!stationMap.has(pid)) stationMap.set(pid, s)
+        }
+        for (const [pid, rawStop] of stationMap) {
+          if (pid === fromStop.id || pid === toStop.id) continue
+          try {
+            const stopRoutes = await getRoutesForStop(pid)
+            const toRoute = stopRoutes.find(r => toRouteIds.has(r.id))
+            if (toRoute) routeCandidates.push({ hubId: pid, fromRoute, toRoute })
+          } catch {}
+        }
+      } catch {}
+    }))
+  }
 
-      // Use the first 2 transfer candidates (avoid too many API calls)
-      for (const { transferStop, connectingRoutes } of transferCandidates.slice(0, 2)) {
-        const connectingRoute = connectingRoutes[0]
-        try {
-          // Get departure from fromStop on fromRoute
-          const leg1Preds = await mbtaFetch(
-            `/predictions?filter[stop]=${fromStop.id}&filter[route]=${fromRoute.id}` +
-            `&sort=departure_time&include=trip&page[limit]=3`
-          )
-          const leg1Trips = {}
-          ;(leg1Preds.included || []).forEach(inc => {
-            if (inc.type === 'trip') leg1Trips[inc.id] = inc.attributes?.headsign || ''
-          })
+  const allCandidates = [...hubCandidates, ...routeCandidates].slice(0, 4)
+  if (allCandidates.length === 0) return results
 
-          for (const pred1 of (leg1Preds.data || []).slice(0, 2)) {
-            const dep1 = pred1.attributes?.departure_time || pred1.attributes?.arrival_time
-            if (!dep1 || new Date(dep1) < Date.now() - 30000) continue
-            const tripId1   = pred1.relationships?.trip?.data?.id
-            const headsign1 = pred1.attributes?.headsign || leg1Trips[tripId1] || ''
+  // Step 3: for each transfer hub, find predictions for both legs
+  await Promise.all(allCandidates.map(async ({ hubId, fromRoute, toRoute }) => {
+    try {
+      // Fetch the hub stop record for display
+      let hubStop
+      try {
+        const hs = await mbtaFetch(`/stops/${hubId}`)
+        hubStop = hs.data
+      } catch { hubStop = { id: hubId, attributes: { name: hubId } } }
 
-            // Get arrival at transfer stop for this trip
-            let arr1 = null
-            if (tripId1) {
-              try {
-                const a1 = await mbtaFetch(`/predictions?filter[stop]=${transferStop.id}&filter[trip]=${tripId1}&page[limit]=1`)
-                arr1 = a1.data?.[0]?.attributes?.arrival_time || a1.data?.[0]?.attributes?.departure_time
-              } catch {}
-            }
+      // Leg 1: from → hub on fromRoute
+      const leg1Preds = await mbtaFetch(
+        `/predictions?filter[stop]=${fromStop.id}&filter[route]=${fromRoute.id}` +
+        `&sort=departure_time&include=trip&page[limit]=6`
+      )
+      const leg1Trips = {}
+      ;(leg1Preds.included || []).forEach(inc => {
+        if (inc.type === 'trip') leg1Trips[inc.id] = inc.attributes?.headsign || ''
+      })
 
-            // Get departure from transfer stop on connecting route (after arr1)
-            const leg2Preds = await mbtaFetch(
-              `/predictions?filter[stop]=${transferStop.id}&filter[route]=${connectingRoute.id}` +
-              `&sort=departure_time&include=trip&page[limit]=4`
-            )
-            const leg2Trips = {}
-            ;(leg2Preds.included || []).forEach(inc => {
-              if (inc.type === 'trip') leg2Trips[inc.id] = inc.attributes?.headsign || ''
-            })
+      for (const pred1 of (leg1Preds.data || []).slice(0, 2)) {
+        const dep1 = pred1.attributes?.departure_time || pred1.attributes?.arrival_time
+        if (!dep1 || new Date(dep1) < Date.now() - 30000) continue
+        const tripId1    = pred1.relationships?.trip?.data?.id
+        const headsign1  = pred1.attributes?.headsign || leg1Trips[tripId1] || fromRoute.attributes?.long_name || fromRoute.id
 
-            // Find next departure from transfer stop that's after our arrival there
-            const arrMs = arr1 ? new Date(arr1).getTime() : new Date(dep1).getTime() + 10 * 60000
-            for (const pred2 of (leg2Preds.data || [])) {
-              const dep2 = pred2.attributes?.departure_time || pred2.attributes?.arrival_time
-              if (!dep2) continue
-              const dep2Ms = new Date(dep2).getTime()
-              if (dep2Ms < arrMs) continue   // too early — hasn't arrived yet
+        // Arrival at hub for this trip
+        let arr1 = null
+        if (tripId1) {
+          try {
+            const a1 = await mbtaFetch(`/predictions?filter[stop]=${hubId}&filter[trip]=${tripId1}&page[limit]=1`)
+            arr1 = a1.data?.[0]?.attributes?.arrival_time || a1.data?.[0]?.attributes?.departure_time
+          } catch {}
+        }
 
-              const tripId2   = pred2.relationships?.trip?.data?.id
-              const headsign2 = pred2.attributes?.headsign || leg2Trips[tripId2] || ''
+        // Leg 2: hub → toStop on toRoute (must depart after arr1)
+        const leg2Preds = await mbtaFetch(
+          `/predictions?filter[stop]=${hubId}&filter[route]=${toRoute.id}` +
+          `&sort=departure_time&include=trip&page[limit]=12`
+        )
+        const leg2Trips = {}
+        ;(leg2Preds.included || []).forEach(inc => {
+          if (inc.type === 'trip') leg2Trips[inc.id] = inc.attributes?.headsign || ''
+        })
 
-              // Get arrival at final destination
-              let arr2 = null
-              if (tripId2) {
-                try {
-                  const a2 = await mbtaFetch(`/predictions?filter[stop]=${toStop.id}&filter[trip]=${tripId2}&page[limit]=1`)
-                  arr2 = a2.data?.[0]?.attributes?.arrival_time || a2.data?.[0]?.attributes?.departure_time
-                } catch {}
-              }
+        // Estimate arrival at hub: use actual prediction if available,
+        // else assume 45 min (conservative for CR routes like Salem→North Station)
+        const arrMs = arr1 ? new Date(arr1).getTime() : new Date(dep1).getTime() + 45 * 60000
+        for (const pred2 of (leg2Preds.data || [])) {
+          const dep2 = pred2.attributes?.departure_time || pred2.attributes?.arrival_time
+          if (!dep2) continue
+          const dep2Ms = new Date(dep2).getTime()
+          if (dep2Ms < arrMs) continue  // must be after arrival at hub
 
-              const durMins1 = arr1 ? Math.round((new Date(arr1) - new Date(dep1)) / 60000) : null
-              const durMins2 = arr2 ? Math.round((new Date(arr2) - dep2Ms) / 60000) : null
+          const tripId2   = pred2.relationships?.trip?.data?.id
+          const headsign2 = pred2.attributes?.headsign || leg2Trips[tripId2] || toRoute.attributes?.long_name || toRoute.id
 
-              results.push({
-                id: `${pred1.id}-${pred2.id}`,
-                legs: [
-                  {
-                    route:        fromRoute,
-                    fromStop,
-                    toStop:       transferStop,
-                    departureTime: dep1,
-                    arrivalTime:  arr1,
-                    headsign:     headsign1,
-                    durationMins: durMins1,
-                  },
-                  {
-                    route:        connectingRoute,
-                    fromStop:     transferStop,
-                    toStop,
-                    departureTime: dep2,
-                    arrivalTime:  arr2,
-                    headsign:     headsign2,
-                    durationMins: durMins2,
-                  },
-                ],
-              })
-              break  // one connection per transfer stop per leg1 trip is enough
-            }
+          // Arrival at destination
+          let arr2 = null
+          if (tripId2) {
+            try {
+              const a2 = await mbtaFetch(`/predictions?filter[stop]=${toStop.id}&filter[trip]=${tripId2}&page[limit]=1`)
+              arr2 = a2.data?.[0]?.attributes?.arrival_time || a2.data?.[0]?.attributes?.departure_time
+            } catch {}
           }
-        } catch {}
+
+          results.push({
+            id: `${pred1.id}-${pred2.id}`,
+            legs: [
+              { route: fromRoute, fromStop, toStop: hubStop, departureTime: dep1, arrivalTime: arr1, headsign: headsign1, durationMins: arr1 ? Math.round((new Date(arr1) - new Date(dep1)) / 60000) : null },
+              { route: toRoute,   fromStop: hubStop, toStop, departureTime: dep2, arrivalTime: arr2, headsign: headsign2, durationMins: arr2 ? Math.round((new Date(arr2) - dep2Ms) / 60000) : null },
+            ],
+          })
+          break  // one connection per hub per leg1 trip
+        }
       }
     } catch {}
   }))
 
   return results
 }
+
 
 // ── NextTrain — main export ───────────────────────────────────────────────────
 export default function NextTrain() {

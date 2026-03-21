@@ -16,7 +16,9 @@ function FavCard({ fav, onOpen, onRemove, index }) {
         borderLeft: `3px solid ${lc.accent}`,
         borderRadius: 'var(--radius-md)',
         overflow: 'hidden',
-        transition: 'border-color var(--transition)',
+        transition: 'all var(--transition)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
       }}
       onMouseEnter={e => e.currentTarget.style.borderColor = lc.accent}
       onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}

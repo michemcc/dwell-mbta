@@ -44,8 +44,9 @@ export function getLineColor(routeId = '') {
 export function formatCountdown(isoTime) {
   if (!isoTime) return { label: '—', tier: 'unknown', seconds: null }
   const diff = Math.floor((new Date(isoTime) - Date.now()) / 1000)
-  if (diff < -60)  return { label: 'DEPARTING', tier: 'gone',     seconds: diff }  // was DEPARTED
-  if (diff <= 0)   return { label: 'BRD',        tier: 'boarding', seconds: diff }
+  if (diff < -90)  return { label: 'DEPARTED',  tier: 'gone',     seconds: diff }
+  if (diff < 0)    return { label: 'DEPARTING', tier: 'boarding', seconds: diff }
+  if (diff === 0)  return { label: 'NOW',        tier: 'boarding', seconds: diff }
   if (diff <= 60)  return { label: `${diff}s`,   tier: 'now',      seconds: diff }
   const m = Math.floor(diff / 60)
   const s = String(diff % 60).padStart(2, '0')

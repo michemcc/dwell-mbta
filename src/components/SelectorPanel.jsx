@@ -17,12 +17,13 @@ function StepHeader({ number, label, completed, value, onReset }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
       <div style={{
         width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
-        background: completed ? 'var(--accent)' : 'var(--bg-4)',
+        background: completed ? 'var(--accent)' : 'transparent',
         border: `1.5px solid ${completed ? 'var(--accent)' : 'var(--border-mid)'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700,
-        color: completed ? '#07080C' : 'var(--text-dim)',
-        transition: 'all 0.2s',
+        color: completed ? 'var(--accent-text)' : 'var(--text-dim)',
+        transition: 'all 0.22s',
+        boxShadow: completed ? '0 0 12px var(--accent)44' : 'none',
       }}>
         {completed ? '✓' : number}
       </div>
@@ -51,10 +52,14 @@ function StepHeader({ number, label, completed, value, onReset }) {
 
 function StepConnector({ active }) {
   return (
-    <div style={{ marginLeft: 12, height: 22, display: 'flex', alignItems: 'stretch' }}>
+    <div style={{ marginLeft: 12, height: 20, display: 'flex', alignItems: 'stretch' }}>
       <div style={{
-        width: 1.5, background: active ? 'var(--accent)' : 'var(--border)',
+        width: 1.5,
+        background: active
+          ? 'linear-gradient(to bottom, var(--accent), var(--accent-dim))'
+          : 'var(--border)',
         transition: 'background 0.3s',
+        borderRadius: 1,
       }} />
     </div>
   )

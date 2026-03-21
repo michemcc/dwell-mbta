@@ -499,32 +499,123 @@ function StopDropdown({ route, currentStop, onSelect }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AlertBanner
+// AlertBanner — horizontal swipe/scroll carousel, one card per alert
 // ─────────────────────────────────────────────────────────────────────────────
 function AlertBanner({ alerts }) {
-  const [idx, setIdx] = useState(0)
+  const trackRef  = useRef(null)
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStart  = useRef(0)
+  const scrollStart = useRef(0)
+
+  // Reset scroll when alerts change
   useEffect(() => {
-    setIdx(0)   // reset index when alerts list changes (e.g. route switch)
+    if (trackRef.current) trackRef.current.scrollLeft = 0
+    setActiveIdx(0)
   }, [alerts])
-  useEffect(() => {
-    if (alerts.length < 2) return
-    const t = setInterval(() => setIdx(i => (i + 1) % alerts.length), 5000)
-    return () => clearInterval(t)
-  }, [alerts.length])
+
   if (!alerts.length) return null
-  const a = alerts[idx]
+
+  // Track which card is in view by scroll position
+  const onScroll = () => {
+    if (!trackRef.current) return
+    const w     = trackRef.current.clientWidth
+    const idx   = Math.round(trackRef.current.scrollLeft / w)
+    setActiveIdx(Math.min(idx, alerts.length - 1))
+  }
+
+  // Mouse drag support for desktop
+  const onMouseDown = e => {
+    setIsDragging(false)
+    dragStart.current  = e.clientX
+    scrollStart.current = trackRef.current.scrollLeft
+    const onMove = ev => {
+      const dx = dragStart.current - ev.clientX
+      trackRef.current.scrollLeft = scrollStart.current + dx
+      if (Math.abs(dx) > 4) setIsDragging(true)
+    }
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      // Snap to nearest card
+      if (trackRef.current) {
+        const w   = trackRef.current.clientWidth
+        const idx = Math.round(trackRef.current.scrollLeft / w)
+        trackRef.current.scrollTo({ left: idx * w, behavior: 'smooth' })
+      }
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
+
   return (
-    <div className="anim-fade-up" style={{
-      display: 'flex', gap: 12, padding: '11px 16px', marginBottom: 20,
-      background: 'rgba(232,80,74,0.09)', border: '1px solid rgba(232,80,74,0.28)',
-      borderLeft: '3px solid var(--red)', borderRadius: 'var(--radius-sm)',
-    }}>
-      <span style={{ color: 'var(--red)', fontFamily: 'var(--mono)', fontSize: 13, flexShrink: 0 }}>⚠</span>
-      <span style={{ fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--text-muted)', letterSpacing: '0.03em', lineHeight: 1.5, flex: 1 }}>
-        {a.attributes?.header || 'Service alert'}
-      </span>
+    <div className="anim-fade-up" style={{ marginBottom: 20 }}>
+      {/* Scrollable track */}
+      <div
+        ref={trackRef}
+        onScroll={onScroll}
+        onMouseDown={onMouseDown}
+        style={{
+          display: 'flex',
+          overflowX: 'scroll',
+          scrollSnapType: 'x mandatory',
+          scrollBehavior: 'smooth',
+          WebkitOverflowScrolling: 'touch',
+          // Hide scrollbar visually
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          cursor: isDragging ? 'grabbing' : 'grab',
+          borderRadius: 'var(--radius-sm)',
+        }}
+      >
+        {alerts.map((a, i) => (
+          <div key={a.id || i} style={{
+            flex: '0 0 100%',
+            scrollSnapAlign: 'start',
+            display: 'flex', gap: 12, padding: '12px 16px',
+            background: 'rgba(232,80,74,0.09)',
+            border: '1px solid rgba(232,80,74,0.28)',
+            borderLeft: '3px solid var(--red)',
+            borderRadius: 'var(--radius-sm)',
+            userSelect: 'none',
+          }}>
+            <span style={{ color: 'var(--red)', fontFamily: 'var(--mono)', fontSize: 14, flexShrink: 0, marginTop: 1 }}>⚠</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--text-muted)', letterSpacing: '0.03em', lineHeight: 1.6 }}>
+                {a.attributes?.header || 'Service alert'}
+              </div>
+              {a.attributes?.description && (
+                <div style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text-dim)', marginTop: 4, letterSpacing: '0.02em', lineHeight: 1.5 }}>
+                  {a.attributes.description.split('\n')[0]}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Dot indicators — only when multiple alerts */}
       {alerts.length > 1 && (
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', flexShrink: 0, alignSelf: 'center' }}>{idx+1}/{alerts.length}</span>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 8 }}>
+          {alerts.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                if (trackRef.current) {
+                  trackRef.current.scrollTo({ left: i * trackRef.current.clientWidth, behavior: 'smooth' })
+                }
+              }}
+              style={{
+                width: i === activeIdx ? 18 : 6,
+                height: 6,
+                borderRadius: 3,
+                background: i === activeIdx ? 'var(--red)' : 'rgba(232,80,74,0.3)',
+                border: 'none', cursor: 'pointer', padding: 0,
+                transition: 'width 0.25s, background 0.25s',
+              }}
+            />
+          ))}
+        </div>
       )}
     </div>
   )
@@ -539,18 +630,30 @@ function LiveCountdown({ isoTime, large }) {
     const t = setInterval(() => setCd(formatCountdown(isoTime)), 1000)
     return () => clearInterval(t)
   }, [isoTime])
-  const color  = COUNTDOWN_COLORS[cd.tier] || 'var(--text-muted)'
-  const urgent = cd.tier === 'boarding' || cd.tier === 'now'
+  const color   = COUNTDOWN_COLORS[cd.tier] || 'var(--text-muted)'
+  const urgent  = cd.tier === 'boarding' || cd.tier === 'now'
+  const soon    = cd.tier === 'soon'
+  const baseSz  = large ? 18 : 14
+  const fontSize = urgent ? baseSz + 2 : soon ? baseSz + 1 : baseSz
   return (
     <span style={{
-      fontFamily: 'var(--mono)', fontWeight: 700,
-      fontSize: large ? (urgent ? 20 : 17) : (urgent ? 16 : 14),
-      color, letterSpacing: '0.02em',
-      textShadow: urgent ? `0 0 14px ${color}66` : 'none',
-      transition: 'color 0.4s', whiteSpace: 'nowrap',
+      fontFamily: 'var(--mono)', fontWeight: urgent || soon ? 800 : 600,
+      fontSize, color,
+      letterSpacing: urgent ? '0.01em' : '0.03em',
+      textShadow: urgent ? `0 0 16px ${color}55` : 'none',
+      transition: 'color 0.35s, font-size 0.2s',
+      whiteSpace: 'nowrap',
+      lineHeight: 1,
     }}>
       {cd.label}
-      {urgent && <span style={{ marginLeft: 4, fontSize: 8, animation: 'blink 0.9s step-end infinite', opacity: 0.7 }}>●</span>}
+      {urgent && (
+        <span style={{
+          display: 'inline-block', marginLeft: 5,
+          width: 6, height: 6, borderRadius: '50%',
+          background: color, verticalAlign: 'middle',
+          animation: 'pulse-dot 1.4s ease-out infinite',
+        }} />
+      )}
     </span>
   )
 }
@@ -586,64 +689,81 @@ function DestinationGroup({ group, accent, groupIndex }) {
   const next     = predictions[0]
   const nextTime = next?.attributes?.arrival_time || next?.attributes?.departure_time
 
+  // For branched groups (Southbound = Braintree + Ashmont), the header row
+  // can't show a confident countdown because we don't know which branch the
+  // next train serves until it's closer. Show "NEXT" label instead, and put
+  // individual countdowns on each branch row below.
+  const showHeaderCountdown = !isBranched
+
   return (
     <div className="anim-fade-up" style={{ animationDelay: `${groupIndex * 0.06}s`, borderBottom: '1px solid var(--border)' }}>
-      {/* ── Section header ─────────────────────────────────────────────
-           Two-row layout: name on top, chips below.
-           Chips are on their own row so flex truncation CANNOT clip them. */}
+      {/* ── Section header ── */}
       <div style={{
-        padding: '12px 20px 10px', background: 'var(--bg-3)',
+        padding: '13px 20px 10px', background: 'var(--bg-3)',
         borderLeft: `3px solid ${accent}`,
       }}>
-        {/* Row 1: dot + destination name + countdown */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: accent, boxShadow: `0 0 7px ${accent}88` }} />
+        {/* Row 1: dot + name + (countdown or NEXT label) */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: isBranched ? 8 : 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0, flex: 1 }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: accent, boxShadow: `0 0 8px ${accent}99` }} />
             <span style={{
-              fontFamily: 'var(--display)', fontSize: 16, fontWeight: 700,
-              letterSpacing: '-0.01em', color: 'var(--text)',
+              fontFamily: 'var(--display)', fontSize: 17, fontWeight: 700,
+              letterSpacing: '-0.02em', color: 'var(--text)',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {headsign}
             </span>
           </div>
-          <LiveCountdown isoTime={nextTime} large />
+          {showHeaderCountdown
+            ? <LiveCountdown isoTime={nextTime} large />
+            : <span style={{
+                fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.12em',
+                color: 'var(--text-dim)', flexShrink: 0,
+              }}>NEXT ↓</span>
+          }
         </div>
-        {/* Row 2: chips — own row, never truncated */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingLeft: 18 }}>
+
+        {/* Row 2: branch chips (for branched) or destination chip (for non-branched) */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingLeft: 19 }}>
           {isBranched && branches.length > 0
             ? branches.map(b => <BranchBadge key={b} label={b} accent={accent} />)
-            : <DestGroupChip label={headsign} accent={accent} />
+            : headsign
+              ? <DestGroupChip label={headsign} accent={accent} />
+              : null
           }
         </div>
       </div>
 
-      {/* ── Subsequent trains for this destination ─────────────────────── */}
-      {predictions.slice(1).map(p => {
+      {/* ── Individual trains ── */}
+      {predictions.map((p, rowIdx) => {
+        // For non-branched: skip the first row (already shown in header)
+        if (!isBranched && rowIdx === 0) return null
         const arrTime = p.attributes?.arrival_time || p.attributes?.departure_time
+        const isFirst = rowIdx === 0  // first row of a branched group
         return (
           <div key={p.id} style={{
             display: 'flex', alignItems: 'center', gap: 10,
-            padding: '9px 20px 9px 43px',
+            padding: `${isFirst ? 10 : 9}px 20px ${isFirst ? 10 : 9}px 43px`,
             borderTop: '1px solid var(--border)',
-            background: 'transparent', transition: 'background 0.12s',
+            background: isFirst ? `${accent}08` : 'transparent',
+            transition: 'background 0.12s',
           }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-3)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            onMouseEnter={e => e.currentTarget.style.background = `${accent}10`}
+            onMouseLeave={e => e.currentTarget.style.background = isFirst ? `${accent}08` : 'transparent'}
           >
-            {/* Branch chip or time */}
-            {isBranched && p._branch
-              ? <BranchBadge label={p._branch} accent={accent} />
-              : null
-            }
+            {/* Branch badge (if branched) */}
+            {isBranched && p._branch && (
+              <BranchBadge label={p._branch} accent={accent} />
+            )}
             {/* Scheduled time */}
             <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.06em', flex: 1 }}>
               {arrTime ? new Date(arrTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
             </span>
-            <LiveCountdown isoTime={arrTime} />
+            {/* Live countdown on every row */}
+            <LiveCountdown isoTime={arrTime} large={isBranched && rowIdx === 0} />
           </div>
         )
-      })}
+      }).filter(Boolean)}
     </div>
   )
 }
@@ -764,10 +884,15 @@ export default function ArrivalsBoard({ mode, route: initialRoute, stop: initial
         : groups.length === 0
         ? <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>No upcoming arrivals found</div>
         : (
-          <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 20px', borderBottom: `1.5px solid ${lc.accent}55`, background: 'var(--bg-2)' }}>
-              <MonoLabel>Destination</MonoLabel>
-              <MonoLabel>Min</MonoLabel>
+          <div className="glass-card" style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between',
+              padding: '8px 20px',
+              background: `linear-gradient(90deg, ${lc.accent}18 0%, transparent 100%)`,
+              borderBottom: `1px solid ${lc.accent}44`,
+            }}>
+              <MonoLabel style={{ color: lc.accent, opacity: 0.85 }}>Destination</MonoLabel>
+              <MonoLabel style={{ color: lc.accent, opacity: 0.85 }}>Min</MonoLabel>
             </div>
             {groups.map((g, i) => <DestinationGroup key={g.headsign} group={g} accent={lc.accent} groupIndex={i} />)}
           </div>

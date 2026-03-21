@@ -8,7 +8,7 @@ import NextTrain from './components/NextTrain'
 import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.2.5'
+const VERSION = '2026.3.0'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────
@@ -80,17 +80,25 @@ function QuickSearch({ onCommit, autoFocus }) {
           ref={inputRef}
           value={query}
           onChange={e => { setQuery(e.target.value); setOpen(true) }}
-          onFocus={() => setOpen(true)}
           placeholder="Type any stop name — Park Street, Salem, Downtown Crossing…"
           style={{
             width: '100%', background: 'var(--bg-3)',
-            border: '1px solid var(--border)', borderLeft: '2px solid var(--accent)',
-            borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-            fontFamily: 'var(--mono)', fontSize: 13, padding: '13px 40px 13px 32px',
-            letterSpacing: '0.04em', outline: 'none', transition: 'border-color 0.14s',
+            border: '1px solid var(--border)', borderLeft: '3px solid var(--accent)',
+            borderRadius: 'var(--radius-md)', color: 'var(--text)',
+            fontFamily: 'var(--mono)', fontSize: 14, padding: '14px 44px 14px 34px',
+            letterSpacing: '0.03em', outline: 'none',
+            transition: 'border-color 0.16s, box-shadow 0.16s',
+            boxShadow: 'none',
           }}
-          onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-          onBlur={e => e.target.style.borderColor = 'var(--border)'}
+          onFocus={e => {
+            setOpen(true)
+            e.target.style.borderColor = 'var(--accent)'
+            e.target.style.boxShadow = '0 0 0 3px rgba(242,202,69,0.1)'
+          }}
+          onBlur={e => {
+            e.target.style.borderColor = 'var(--border)'
+            e.target.style.boxShadow = 'none'
+          }}
           onKeyDown={e => {
             if (e.key === 'Escape') { clear(); e.target.blur() }
             // Enter on first result
@@ -192,21 +200,25 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
       )}
 
       {/* Tab switcher */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid var(--border)' }}>
+      <div style={{
+        display: 'flex', gap: 4, marginBottom: 24,
+        background: 'var(--bg-3)', borderRadius: 'var(--radius-md)',
+        padding: 4,
+      }}>
         {[['search', 'Search a stop'], ['browse', 'Browse by line']].map(([id, label]) => (
           <button
             key={id}
             onClick={() => setTab(id)}
             style={{
-              padding: '10px 20px',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: `2px solid ${tab === id ? 'var(--accent)' : 'transparent'}`,
+              flex: 1, padding: '9px 16px',
+              background: tab === id ? 'var(--bg)' : 'transparent',
+              border: tab === id ? '1px solid var(--border-mid)' : '1px solid transparent',
+              borderRadius: 'var(--radius-sm)',
               color: tab === id ? 'var(--text)' : 'var(--text-dim)',
               fontFamily: 'var(--mono)', fontSize: 11, fontWeight: tab === id ? 600 : 400,
               letterSpacing: '0.1em', cursor: 'pointer',
-              transition: 'all 0.14s',
-              marginBottom: -1,   // sit on top of the border-bottom
+              transition: 'all 0.16s',
+              boxShadow: tab === id ? '0 1px 4px rgba(0,0,0,0.25)' : 'none',
             }}
           >
             {label.toUpperCase()}
@@ -218,10 +230,10 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
       {tab === 'search' && (
         <div className="anim-fade-in" style={{ minHeight: 240 }}>
           <p style={{
-            fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)',
-            letterSpacing: '0.08em', lineHeight: 1.7, marginBottom: 16,
+            fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-muted)',
+            lineHeight: 1.65, marginBottom: 16,
           }}>
-            Type any stop name. Tap a result to go straight to live arrivals — no extra steps.
+            Type any stop name. Tap a result to go straight to live arrivals.
           </p>
           <QuickSearch onCommit={onCommit} autoFocus />
         </div>
@@ -271,8 +283,10 @@ function BottomNav({ page, onNavigate }) {
   return (
     <nav style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500,
-      background: 'rgba(7,8,12,0.97)', backdropFilter: 'blur(20px)',
-      borderTop: '1px solid var(--border)', display: 'flex',
+      background: 'rgba(6,7,9,0.90)',
+      backdropFilter: 'blur(24px) saturate(1.3)',
+      WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
+      borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex',
     }}>
       {NAV_ITEMS.map(item => {
         const active =
@@ -326,9 +340,11 @@ function Header({ onLogoClick, theme, onThemeToggle }) {
   const isDark = theme === 'dark'
   return (
     <header style={{
-      position: 'sticky', top: 0, zIndex: 100,
-      background: isDark ? 'rgba(7,8,12,0.93)' : 'rgba(245,244,239,0.95)',
-      backdropFilter: 'blur(18px)', borderBottom: '1px solid var(--border)',
+      position: 'sticky', top: 2, zIndex: 100,
+      background: isDark ? 'rgba(6,7,9,0.88)' : 'rgba(245,244,239,0.92)',
+      backdropFilter: 'blur(22px) saturate(1.4)',
+      WebkitBackdropFilter: 'blur(22px) saturate(1.4)',
+      borderBottom: '1px solid var(--border)',
       padding: '0 clamp(16px, 4vw, 40px)', transition: 'background 0.25s',
     }}>
       <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, height: 52 }}>
@@ -458,6 +474,11 @@ export default function App() {
           pointerEvents: 'none', zIndex: 0,
         }} />
       )}
+      {/* Top accent stripe */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, height: 2, zIndex: 999,
+        background: 'linear-gradient(90deg, var(--accent) 0%, rgba(59,130,246,0.7) 50%, rgba(168,85,247,0.5) 100%)',
+      }} />
       <Header onLogoClick={() => navigate('landing')} theme={theme} onThemeToggle={toggleTheme} />
       <main style={{
         position: 'relative', zIndex: 1, maxWidth: 860, margin: '0 auto',
