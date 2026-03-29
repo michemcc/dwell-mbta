@@ -59,8 +59,8 @@ export function SkeletonRow({ cols = [2, 1, 0.6] }) {
 export function MonoLabel({ children, style }) {
   return (
     <span style={{
-      fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.16em',
-      color: 'var(--text-dim)', textTransform: 'uppercase',
+      fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em',
+      color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 500,
       ...style,
     }}>
       {children}

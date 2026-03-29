@@ -9,9 +9,9 @@
   --bg-3:        #0E1118;
   --bg-4:        #14171F;
 
-  --text:        #F2F3F5;        /* already bright, tiny lift */
-  --text-muted:  #A0A8BA;        /* was #8C93A4 — lifted ~15% brighter */
-  --text-dim:    #626878;        /* was #454D60 — lifted ~25% brighter */
+  --text:        #F4F5F7;        /* near-white, high contrast */
+  --text-muted:  #B8BFCF;        /* clearly readable secondary text */
+  --text-dim:    #7A8090;        /* visible labels and metadata */
 
   --accent:      #F2CA45;
   --accent-dim:  #886F1E;
@@ -37,9 +37,9 @@
   --bg-2:        #EEECEA;
   --bg-3:        #E6E4E0;
   --bg-4:        #D9D7D2;
-  --text:        #18181D;
-  --text-muted:  #565861;
-  --text-dim:    #9B9CA9;
+  --text:        #111114;        /* deeper black for max contrast */
+  --text-muted:  #44464E;        /* clearly readable, not washed out */
+  --text-dim:    #7E8090;        /* visible but clearly secondary */
   --accent:      #AA8500;
   --accent-dim:  #6E5700;
   --accent-text: #FFFFFF;
@@ -61,9 +61,9 @@
   --mono:        'IBM Plex Mono', 'Fira Code', monospace;
   --sans:        'IBM Plex Sans', system-ui, sans-serif;
   --display:     'Syne', sans-serif;
-  --radius-sm:   5px;
-  --radius-md:   10px;
-  --radius-lg:   14px;
+  --radius-sm:   6px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
   --transition:  150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 

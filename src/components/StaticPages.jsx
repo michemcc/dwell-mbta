@@ -1,21 +1,64 @@
 import React from 'react'
-import { MonoLabel, Divider } from './Primitives'
+import { MonoLabel } from './Primitives'
 
-const VERSION = '2026.2.1'
+const VERSION = '2026.3.6'
 
-// ── Shared layout ─────────────────────────────────────────────────────────────
-function PageShell({ title, label, children }) {
+// ── Section sub-nav (About / Feedback / Privacy) ──────────────────────────────
+// Always visible within the About section so you can move between these pages
+// without going back to the main nav. On mobile: horizontal pills at top.
+// On desktop: rendered as the same horizontal pills (layout is narrow anyway).
+function SectionNav({ current, onNavigate }) {
+  const items = [
+    { id: 'about',    label: 'About'    },
+    { id: 'feedback', label: 'Feedback' },
+    { id: 'privacy',  label: 'Privacy'  },
+  ]
+  return (
+    <div style={{
+      display: 'flex', gap: 4, marginBottom: 32,
+      background: 'var(--bg-3)', borderRadius: 'var(--radius-md)', padding: 4,
+    }}>
+      {items.map(item => {
+        const active = current === item.id
+        return (
+          <button key={item.id} onClick={() => onNavigate(item.id)}
+            style={{
+              flex: 1, padding: '9px 12px',
+              background: active ? 'var(--bg)' : 'transparent',
+              border: active ? '1px solid var(--border-mid)' : '1px solid transparent',
+              borderRadius: 'var(--radius-sm)',
+              fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.08em',
+              fontWeight: active ? 600 : 400,
+              color: active ? 'var(--text)' : 'var(--text-muted)',
+              cursor: 'pointer', transition: 'all 0.16s',
+              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.2)' : 'none',
+            }}
+          >{item.label}</button>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── PageShell ─────────────────────────────────────────────────────────────────
+function PageShell({ title, label, current, onNavigate, children }) {
   return (
     <div className="anim-fade-in">
-      <div style={{ paddingLeft: 18, marginBottom: 32, borderLeft: '3px solid var(--accent)' }}>
-        <MonoLabel style={{ display: 'block', marginBottom: 8 }}>{label}</MonoLabel>
+      {/* Section sub-nav — always shown on About/Feedback/Privacy */}
+      <SectionNav current={current} onNavigate={onNavigate} />
+
+      {/* Page title */}
+      <div style={{ paddingLeft: 20, marginBottom: 28, borderLeft: '3px solid var(--accent)' }}>
+        <MonoLabel style={{ display: 'block', marginBottom: 8, fontSize: 10, letterSpacing: '0.18em' }}>{label}</MonoLabel>
         <h2 style={{
           fontFamily: 'var(--display)', fontWeight: 800,
-          fontSize: 'clamp(26px, 6vw, 40px)', letterSpacing: '-0.03em',
-          color: 'var(--text)', lineHeight: 1, margin: 0,
+          fontSize: 'clamp(28px, 6vw, 42px)', letterSpacing: '-0.03em',
+          color: 'var(--text)', lineHeight: 1.05, margin: 0,
         }}>{title}</h2>
       </div>
-      <div style={{ fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.75 }}>
+
+      {/* Content */}
+      <div style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.8 }}>
         {children}
       </div>
     </div>
@@ -23,21 +66,23 @@ function PageShell({ title, label, children }) {
 }
 
 function P({ children, style }) {
-  return <p style={{ marginBottom: 18, ...style }}>{children}</p>
+  return <p style={{ marginBottom: 20, fontFamily: 'var(--sans)', ...style }}>{children}</p>
 }
 function H({ children }) {
   return (
     <h3 style={{
-      fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.16em',
-      color: 'var(--text-dim)', textTransform: 'uppercase',
-      marginTop: 32, marginBottom: 10,
+      fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.18em',
+      color: 'var(--accent)', textTransform: 'uppercase',
+      marginTop: 36, marginBottom: 12, opacity: 0.85,
     }}>{children}</h3>
   )
 }
 function A({ href, children }) {
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" style={{
-      color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent-dim)',
+      color: 'var(--accent)', textDecoration: 'none',
+      borderBottom: '1px solid var(--accent-dim)',
+      transition: 'border-color 0.14s',
     }}>{children}</a>
   )
 }
@@ -45,53 +90,47 @@ function A({ href, children }) {
 // ── About ─────────────────────────────────────────────────────────────────────
 export function AboutPage({ onNavigate }) {
   return (
-    <PageShell title="About DWELL" label={`v${VERSION}`}>
+    <PageShell title="About DWELL" label={`v${VERSION}`} current="about" onNavigate={onNavigate}>
       <P>
-        DWELL is a real-time transit intelligence app for Greater Boston, built on top of the{' '}
-        <A href="https://api-v3.mbta.com/">MBTA API v3</A>. It lets you find a stop, watch live
-        arrivals count down to the second, and save your most-used stops for instant access.
+        DWELL is a real-time MBTA transit dashboard for Greater Boston.
+        Live predictions for subway, commuter rail, and bus — no account required, no ads, no tracking.
       </P>
+      <H>How it works</H>
       <P>
-        The name comes from the transit industry term <em>dwell time</em> — the period a vehicle
-        spends motionless at a platform. DWELL is built around that moment: the few seconds
-        between arriving and departing, when information matters most.
+        All data comes from the{' '}
+        <A href="https://api-v3.mbta.com/">MBTA v3 API</A> — the same data the official MBTA
+        app uses. Predictions update every 20 seconds. Service alerts appear instantly.
       </P>
-
-      <H>What it does</H>
+      <H>Features</H>
       <P>
-        Select a transit mode (Subway, Commuter Rail, or Bus), a route, and a stop. DWELL
-        fetches live predictions from the MBTA and shows you exactly how many minutes until
-        each departure — refreshing automatically every 20 seconds. Stops served by multiple
-        lines surface a chip row so you can switch lines without leaving the board.
+        Search any stop by name and jump straight to live arrivals. Browse by mode, line, and stop.
+        Save favourite stops for one-tap access. Plan a trip between any two stations with
+        live departure times and transfer suggestions. Switch between lines at shared stations with
+        the line chips on the arrivals board.
       </P>
-
-      <H>Tech stack</H>
+      <H>Independent project</H>
       <P>
-        Built with React 18 and Vite. No runtime dependencies beyond React itself. Maps use
-        OpenStreetMap tiles — no additional API key required. Favorites are stored in
-        localStorage, so they persist between sessions without any account.
+        DWELL is not affiliated with or endorsed by the MBTA. It is an independent open-source
+        project built for Boston commuters. If you find it useful,{' '}
+        <A href="https://buymeacoffee.com/michemcc">buying a coffee</A> helps keep it running.
       </P>
-
-      <H>Version</H>
-      <P style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
-        DWELL {VERSION} · MBTA API v3 · © {new Date().getFullYear()}
-      </P>
-
-      <H>Data source</H>
+      <H>Contact</H>
       <P>
-        All transit data is provided by the{' '}
-        <A href="https://www.mbta.com/">Massachusetts Bay Transportation Authority (MBTA)</A>.
-        DWELL is an independent project and is not affiliated with or endorsed by the MBTA.
-        Prediction accuracy depends on real-time vehicle reporting and may vary.
+        Found a bug or have a suggestion?{' '}
+        <button onClick={() => onNavigate('feedback')}
+          style={{
+            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            color: 'var(--accent)', borderBottom: '1px solid var(--accent-dim)',
+            fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit',
+          }}
+        >Send feedback</button>
+        {' '}— it goes straight to the developer.
       </P>
     </PageShell>
   )
 }
 
 // ── Feedback ──────────────────────────────────────────────────────────────────
-// Sends via Vercel serverless function so RESEND_API_KEY stays server-side.
-// Set RESEND_API_KEY, FEEDBACK_TO_EMAIL, FEEDBACK_FROM_EMAIL in Vercel env vars.
-
 const FEEDBACK_TO = import.meta.env.VITE_FEEDBACK_TO_EMAIL || 'feedback@yourdomain.com'
 
 async function sendViaResend({ type, message }) {
@@ -107,21 +146,21 @@ async function sendViaResend({ type, message }) {
   return true
 }
 
-export function FeedbackPage() {
-  const [status, setStatus]   = React.useState('idle') // idle | sending | success | error
-  const [errMsg, setErrMsg]   = React.useState('')
-  const [form, setForm]       = React.useState({ type: 'bug', message: '' })
+export function FeedbackPage({ onNavigate }) {
+  const [status, setStatus] = React.useState('idle')
+  const [errMsg, setErrMsg] = React.useState('')
+  const [form, setForm]     = React.useState({ type: 'bug', message: '' })
+
   const types = [
-    { id: 'bug',     label: 'Bug report' },
+    { id: 'bug',     label: 'Bug report'      },
     { id: 'feature', label: 'Feature request' },
-    { id: 'data',    label: 'Data issue' },
-    { id: 'other',   label: 'Other' },
+    { id: 'data',    label: 'Data issue'      },
+    { id: 'other',   label: 'Other'           },
   ]
 
   const handleSubmit = async () => {
     if (!form.message.trim()) return
     const typeLabel = types.find(t => t.id === form.type)?.label || form.type
-
     setStatus('sending')
     try {
       await sendViaResend({ type: typeLabel, message: form.message })
@@ -134,50 +173,59 @@ export function FeedbackPage() {
 
   if (status === 'success') {
     return (
-      <PageShell title="Feedback" label="DWELL">
+      <div className="anim-fade-in">
+        <SectionNav current="feedback" onNavigate={onNavigate} />
         <div style={{
-          padding: '32px 24px', background: 'var(--bg-3)',
+          padding: '36px 28px', background: 'var(--bg-3)',
           border: '1px solid var(--border)', borderLeft: '3px solid var(--green)',
           borderRadius: 'var(--radius-md)', textAlign: 'center',
         }}>
-          <div style={{ fontSize: 28, marginBottom: 12 }}>✓</div>
-          <div style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>
+          <div style={{ fontSize: 32, marginBottom: 14 }}>✓</div>
+          <div style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>
             Feedback received
           </div>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', marginBottom: 20 }}>
-            Feedback sent successfully.
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>
+            Thanks — it goes straight to the developer.
           </div>
           <button onClick={() => { setStatus('idle'); setForm({ type: 'bug', message: '' }) }}
             style={{
-              padding: '8px 20px', background: 'transparent',
-              border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-              color: 'var(--text-dim)', fontFamily: 'var(--mono)', fontSize: 11,
-              letterSpacing: '0.1em', cursor: 'pointer',
+              padding: '9px 22px', background: 'transparent',
+              border: '1px solid var(--border-mid)', borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-muted)', fontFamily: 'var(--mono)', fontSize: 11,
+              letterSpacing: '0.1em', cursor: 'pointer', transition: 'all 0.14s',
             }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-mid)'; e.currentTarget.style.color = 'var(--text-muted)' }}
           >SEND ANOTHER</button>
         </div>
-      </PageShell>
+      </div>
     )
   }
 
   return (
-    <PageShell title="Feedback" label="DWELL">
-      <P>
-        Found a bug? Have a feature request? Something look off with the data?
-        Use the form below to send us a message.
-      </P>
+    <div className="anim-fade-in">
+      <SectionNav current="feedback" onNavigate={onNavigate} />
+
+      <div style={{ paddingLeft: 20, marginBottom: 28, borderLeft: '3px solid var(--accent)' }}>
+        <MonoLabel style={{ display: 'block', marginBottom: 8 }}>DWELL</MonoLabel>
+        <h2 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 'clamp(28px,6vw,42px)', letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1.05, margin: 0 }}>
+          Feedback
+        </h2>
+      </div>
+
+      <P>Found a bug? Have a feature request? Something look off with the data? Use the form below.</P>
 
       {/* Type selector */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
         {types.map(t => (
           <button key={t.id} onClick={() => setForm(f => ({ ...f, type: t.id }))}
             style={{
-              padding: '6px 14px', borderRadius: 999, cursor: 'pointer',
+              padding: '8px 16px', borderRadius: 999, cursor: 'pointer',
               background: form.type === t.id ? 'var(--accent)' : 'transparent',
-              border: `1px solid ${form.type === t.id ? 'var(--accent)' : 'var(--border)'}`,
-              color: form.type === t.id ? '#07080C' : 'var(--text-muted)',
-              fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.08em',
-              transition: 'all 0.14s',
+              border: `1px solid ${form.type === t.id ? 'var(--accent)' : 'var(--border-mid)'}`,
+              color: form.type === t.id ? 'var(--accent-text)' : 'var(--text-muted)',
+              fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 600,
+              letterSpacing: '0.08em', transition: 'all 0.14s',
             }}
           >{t.label}</button>
         ))}
@@ -187,56 +235,54 @@ export function FeedbackPage() {
       <textarea
         value={form.message}
         onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-        placeholder="Describe the issue or idea…"
+        placeholder="Describe the issue or idea in as much detail as you like…"
         rows={6}
         style={{
           width: '100%', background: 'var(--bg-3)',
           border: '1px solid var(--border)', borderLeft: '2px solid var(--accent)',
-          borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-          fontFamily: 'var(--sans)', fontSize: 14, lineHeight: 1.6,
-          padding: '12px 16px', outline: 'none', resize: 'vertical',
-          marginBottom: 16,
+          borderRadius: 'var(--radius-md)', color: 'var(--text)',
+          fontFamily: 'var(--sans)', fontSize: 14, lineHeight: 1.65,
+          padding: '14px 16px', outline: 'none', resize: 'vertical',
+          marginBottom: 16, transition: 'border-color 0.14s',
         }}
         onFocus={e => e.target.style.borderColor = 'var(--accent)'}
         onBlur={e => e.target.style.borderColor = 'var(--border)'}
       />
 
-      {/* Error state */}
+      {/* Error */}
       {status === 'error' && (
         <div style={{
-          padding: '10px 14px', marginBottom: 14,
-          background: 'rgba(232,80,74,0.08)', border: '1px solid rgba(232,80,74,0.3)',
+          padding: '12px 16px', marginBottom: 16,
+          background: 'rgba(240,85,85,0.08)', border: '1px solid rgba(240,85,85,0.3)',
           borderLeft: '3px solid var(--red)', borderRadius: 'var(--radius-sm)',
-          fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--red)', lineHeight: 1.5,
+          fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--red)', lineHeight: 1.6,
         }}>
           ⚠ {errMsg || 'Send failed — please try again.'}
         </div>
       )}
-      <button
-        onClick={handleSubmit}
-        disabled={status === 'sending' || !form.message.trim()}
+
+      <button onClick={handleSubmit} disabled={status === 'sending' || !form.message.trim()}
         style={{
-          padding: '12px 28px', background: 'var(--accent)', color: 'var(--accent-text)',
+          padding: '13px 32px', background: 'var(--accent)', color: 'var(--accent-text)',
           border: 'none', borderRadius: 'var(--radius-sm)',
           cursor: status === 'sending' || !form.message.trim() ? 'default' : 'pointer',
-          fontFamily: 'var(--display)', fontSize: 14, fontWeight: 800,
+          fontFamily: 'var(--display)', fontSize: 15, fontWeight: 800,
           letterSpacing: '0.06em', transition: 'opacity 0.14s',
           opacity: form.message.trim() && status !== 'sending' ? 1 : 0.4,
-          display: 'flex', alignItems: 'center', gap: 8,
         }}
         onMouseEnter={e => { if (form.message.trim() && status !== 'sending') e.currentTarget.style.opacity = '0.85' }}
         onMouseLeave={e => { e.currentTarget.style.opacity = form.message.trim() && status !== 'sending' ? '1' : '0.4' }}
       >
         {status === 'sending' ? 'SENDING…' : 'SEND FEEDBACK →'}
       </button>
-    </PageShell>
+    </div>
   )
 }
 
 // ── Privacy Policy ────────────────────────────────────────────────────────────
-export function PrivacyPage() {
+export function PrivacyPage({ onNavigate }) {
   return (
-    <PageShell title="Privacy Policy" label={`Effective ${new Date().getFullYear()}`}>
+    <PageShell title="Privacy Policy" label={`Effective ${new Date().getFullYear()}`} current="privacy" onNavigate={onNavigate}>
       <P>
         DWELL is designed to respect your privacy. This policy explains what data is collected,
         what is not, and how the app operates.
@@ -250,12 +296,12 @@ export function PrivacyPage() {
       <H>Local storage</H>
       <P>
         DWELL stores your saved stops and theme preference in your browser's local storage.
-        This data never leaves your device.
+        This data never leaves your device and can be cleared at any time from your browser settings.
       </P>
       <H>Feedback form</H>
       <P>
-        If you submit feedback, your message is sent to us via Resend.
-        We only receive the text you type — no IP address, device info, or identifying data is attached.
+        If you submit feedback, your message is sent to the developer via Resend.
+        Only the text you type is transmitted — no IP address, device info, or identifying data is attached.
       </P>
       <H>Data source</H>
       <P>

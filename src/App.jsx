@@ -8,7 +8,7 @@ import NextTrain from './components/NextTrain'
 import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.3.5'
+const VERSION = '2026.3.6'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────
@@ -176,25 +176,25 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
   return (
     <div className="anim-fade-in">
       {/* Wordmark */}
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0, marginBottom: 4 }}>
-          <h1 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 'clamp(40px,9vw,68px)', letterSpacing: '-0.05em', color: 'var(--text)', lineHeight: 1, margin: 0 }}>
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0, marginBottom: 6 }}>
+          <h1 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 'clamp(48px,10vw,76px)', letterSpacing: '-0.05em', color: 'var(--text)', lineHeight: 1, margin: 0 }}>
             DWELL
           </h1>
-          <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--accent)', marginBottom: 10, marginLeft: 6, flexShrink: 0, boxShadow: '0 0 16px var(--accent)' }} />
+          <span style={{ width: 11, height: 11, borderRadius: '50%', background: 'var(--accent)', marginBottom: 12, marginLeft: 7, flexShrink: 0, boxShadow: '0 0 20px var(--accent)' }} />
         </div>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.2em' }}>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-muted)', letterSpacing: '0.18em', marginBottom: 16 }}>
           GREATER BOSTON TRANSIT INTELLIGENCE
         </div>
-        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center' }}>
-          <div style={{ width: 32, height: 1, background: 'var(--accent)' }} />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ width: 40, height: 2, background: 'var(--accent)', borderRadius: 1 }} />
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
       </div>
 
       {/* Saved stops — always shown above the tab UI */}
       {favorites.length > 0 && (
-        <div style={{ marginBottom: 28 }}>
+        <div style={{ marginBottom: 32 }}>
           <FavoritesPanel favorites={favorites} onOpen={onOpenFav} onRemove={onRemoveFav} />
         </div>
       )}
@@ -230,8 +230,8 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
       {tab === 'search' && (
         <div className="anim-fade-in" style={{ minHeight: 240 }}>
           <p style={{
-            fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-muted)',
-            lineHeight: 1.65, marginBottom: 16,
+            fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--text-muted)',
+            lineHeight: 1.6, marginBottom: 20,
           }}>
             Type any stop name. Tap a result to go straight to live arrivals.
           </p>
@@ -588,8 +588,8 @@ export default function App() {
         )
 
       case 'about':    return <AboutPage onNavigate={navigate} />
-      case 'feedback': return <FeedbackPage />
-      case 'privacy':  return <PrivacyPage />
+      case 'feedback': return <FeedbackPage onNavigate={navigate} />
+      case 'privacy':  return <PrivacyPage onNavigate={navigate} />
 
       default: // landing
         return (
