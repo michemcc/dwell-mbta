@@ -5,31 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- ── Primary SEO ─────────────────────────────────────────────────── -->
-    <title>DWELL | MBTA Live Arrivals</title>
-    <meta name="description" content="Real-time MBTA subway, commuter rail, and bus arrivals for Greater Boston. Live predictions, service alerts, and trip planning — no app required." />
-    <meta name="keywords" content="MBTA, Boston subway, commuter rail, live arrivals, MBTA tracker, real-time transit, T arrivals, Red Line, Orange Line, Green Line, Blue Line, Boston transit" />
+    <title>DWELL | MBTA Live Arrivals — Boston Subway, Commuter Rail & Bus</title>
+    <meta name="description" content="Real-time MBTA arrival times for every subway, commuter rail, and bus stop in Greater Boston. Live predictions, service alerts, trip planning, and saved stops — free, no account required." />
+    <meta name="keywords" content="MBTA arrivals, Boston subway times, MBTA live tracker, Red Line arrivals, Orange Line arrivals, Green Line arrivals, Blue Line arrivals, commuter rail schedule, MBTA bus tracker, T arrivals Boston, MBTA real time, South Station departures, North Station departures, Downtown Crossing, Park Street, Alewife, Forest Hills, Kenmore, Boston transit app" />
     <meta name="author" content="DWELL" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
     <link rel="canonical" href="https://dwellmbta.com/" />
 
-    <!-- ── Open Graph (Facebook, LinkedIn, iMessage previews) ─────────── -->
-    <meta property="og:type"        content="website" />
-    <meta property="og:url"         content="https://dwellmbta.com/" />
-    <meta property="og:title"       content="DWELL | MBTA Live Arrivals" />
-    <meta property="og:description" content="Real-time MBTA arrivals for Greater Boston. Subway, commuter rail, and bus — live predictions and service alerts in one place." />
-    <meta property="og:image"       content="https://dwellmbta.com/og-image.png" />
+    <!-- ── Geo targeting ──────────────────────────────────────────────── -->
+    <meta name="geo.region" content="US-MA" />
+    <meta name="geo.placename" content="Boston, Massachusetts" />
+    <meta name="geo.position" content="42.3601;-71.0589" />
+    <meta name="ICBM" content="42.3601, -71.0589" />
+
+    <!-- ── Open Graph ─────────────────────────────────────────────────── -->
+    <meta property="og:type"         content="website" />
+    <meta property="og:url"          content="https://dwellmbta.com/" />
+    <meta property="og:title"        content="DWELL | MBTA Live Arrivals — Boston Transit Tracker" />
+    <meta property="og:description"  content="Real-time MBTA arrival times for subway, commuter rail, and bus across Greater Boston. Live predictions, service alerts, and trip planning." />
+    <meta property="og:image"        content="https://dwellmbta.com/og-image.png" />
     <meta property="og:image:width"  content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt"   content="DWELL — MBTA Live Arrivals dashboard" />
-    <meta property="og:site_name"   content="DWELL" />
-    <meta property="og:locale"      content="en_US" />
+    <meta property="og:image:alt"    content="DWELL — MBTA Live Arrivals dashboard showing real-time Boston transit predictions" />
+    <meta property="og:site_name"    content="DWELL" />
+    <meta property="og:locale"       content="en_US" />
 
-    <!-- ── Twitter / X card ───────────────────────────────────────────── -->
+    <!-- ── Twitter / X ────────────────────────────────────────────────── -->
     <meta name="twitter:card"        content="summary_large_image" />
     <meta name="twitter:title"       content="DWELL | MBTA Live Arrivals" />
-    <meta name="twitter:description" content="Real-time MBTA arrivals for Greater Boston. Subway, commuter rail, and bus live predictions." />
+    <meta name="twitter:description" content="Real-time MBTA arrivals for Greater Boston — subway, commuter rail, and bus. Free, no account required." />
     <meta name="twitter:image"       content="https://dwellmbta.com/og-image.png" />
-    <meta name="twitter:image:alt"   content="DWELL — MBTA Live Arrivals" />
+    <meta name="twitter:image:alt"   content="DWELL MBTA Live Arrivals" />
 
     <!-- ── Theme & PWA ────────────────────────────────────────────────── -->
     <meta name="theme-color" content="#05060A" />
@@ -43,17 +50,20 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2305060A'/%3E%3Crect x='0' y='0' width='32' height='2.5' rx='1' fill='%23F2CA45' opacity='0.9'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='800' font-size='20' fill='%23F2CA45' letter-spacing='-1'%3ED%3C/text%3E%3C/svg%3E" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%2305060A'/%3E%3Crect x='0' y='0' width='180' height='14' rx='4' fill='%23F2CA45' opacity='0.9'/%3E%3Ctext x='90' y='130' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='800' font-size='110' fill='%23F2CA45' letter-spacing='-4'%3ED%3C/text%3E%3C/svg%3E" />
 
-    <!-- ── Structured data (JSON-LD) ──────────────────────────────────── -->
+    <!-- ── Structured data — WebApplication ───────────────────────────── -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "DWELL",
+      "alternateName": "DWELL MBTA Tracker",
       "url": "https://dwellmbta.com/",
-      "description": "Real-time MBTA subway, commuter rail, and bus arrival predictions for Greater Boston. Live service alerts and trip planning.",
+      "description": "Real-time MBTA subway, commuter rail, and bus arrival predictions for Greater Boston. Live service alerts, trip planning, and saved stops.",
       "applicationCategory": "TravelApplication",
+      "applicationSubCategory": "Public Transit",
       "operatingSystem": "Any",
       "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -64,24 +74,161 @@
         "name": "DWELL",
         "url": "https://dwellmbta.com/"
       },
+      "featureList": [
+        "Real-time MBTA subway arrival predictions",
+        "Commuter rail live departure times",
+        "MBTA bus stop tracker",
+        "Service alerts and delays",
+        "Trip planning with transfers",
+        "Saved favourite stops",
+        "Live train map for commuter rail"
+      ],
       "areaServed": {
-        "@type": "City",
-        "name": "Boston",
+        "@type": "AdministrativeArea",
+        "name": "Greater Boston",
         "containedInPlace": {
           "@type": "State",
-          "name": "Massachusetts"
+          "name": "Massachusetts",
+          "containedInPlace": {
+            "@type": "Country",
+            "name": "United States"
+          }
         }
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "MBTA — Massachusetts Bay Transportation Authority",
+        "sameAs": "https://www.mbta.com/"
       }
     }
     </script>
 
-    <!-- ── Fonts ───────────────────────────────────────────────────────── -->
+    <!-- ── Structured data — FAQPage ──────────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I check live MBTA arrivals?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Type any stop name — like Park Street, South Station, or Salem — into DWELL's search bar and tap the result. Live predictions appear instantly, updated every 20 seconds from the MBTA API."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which MBTA lines does DWELL cover?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DWELL covers all MBTA lines: Red Line, Orange Line, Green Line (B, C, D, E branches), Blue Line, Silver Line, all Commuter Rail routes, and bus stops across Greater Boston."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is DWELL free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. DWELL is completely free, requires no account, and has no login. It runs in your browser on any device."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How accurate are DWELL's MBTA predictions?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DWELL uses the official MBTA v3 API — the same real-time data the MBTA's own app uses. Predictions update every 20 seconds and reflect current vehicle positions and dwell times."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I plan a trip with transfers on DWELL?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The Plan tab lets you enter any two stops and DWELL finds direct connections or 1-transfer journeys, showing live departure times and estimated ride duration for each leg."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- ── Google AdSense ─────────────────────────────────────────────── -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8122655266413187"
+         crossorigin="anonymous"></script>
+
+    <!-- ── Fonts ──────────────────────────────────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+    <!-- ── Pre-render styles (visible before JS loads) ───────────────── -->
+    <style>
+      body { margin: 0; background: #05060A; color: #F4F5F7; font-family: system-ui, sans-serif; }
+      #pre-render { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+      #pre-render h1 { font-size: 48px; font-weight: 800; letter-spacing: -0.04em; margin: 0 0 6px; color: #F4F5F7; }
+      #pre-render h1 span { color: #F2CA45; }
+      #pre-render p  { font-size: 15px; line-height: 1.7; color: #B8BFCF; margin: 0 0 12px; }
+      #pre-render h2 { font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #7A8090; margin: 28px 0 10px; font-weight: 500; }
+      #pre-render ul { padding-left: 20px; color: #B8BFCF; font-size: 15px; line-height: 1.9; margin: 0 0 16px; }
+      #pre-render .loading { font-size: 11px; letter-spacing: 0.14em; color: #7A8090; text-transform: uppercase; margin-top: 40px; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        Static pre-render shell — visible to search engines and AdSense review bots
+        before JavaScript executes. React replaces this on load.
+      -->
+      <div id="pre-render">
+        <h1>DWELL<span>.</span></h1>
+        <p><strong>Real-time MBTA arrivals for Greater Boston.</strong> Live predictions for every subway, commuter rail, and bus stop — updated every 20 seconds, free, no account required.</p>
+
+        <h2>MBTA Lines Covered</h2>
+        <ul>
+          <li><strong>Red Line</strong> — Alewife to Braintree / Ashmont</li>
+          <li><strong>Orange Line</strong> — Oak Grove to Forest Hills</li>
+          <li><strong>Green Line</strong> — All branches: B (Boston College), C (Cleveland Circle), D (Riverside), E (Heath Street / Medford)</li>
+          <li><strong>Blue Line</strong> — Wonderland to Bowdoin</li>
+          <li><strong>Silver Line</strong> — SL1, SL2, SL3, SL4, SL5</li>
+          <li><strong>Commuter Rail</strong> — All 13 lines including Providence, Fitchburg, Worcester, Newburyport/Rockport, and more</li>
+          <li><strong>Bus</strong> — Local and express routes across Boston, Cambridge, Somerville, and surrounding towns</li>
+        </ul>
+
+        <h2>Features</h2>
+        <ul>
+          <li>Search any stop by name — Park Street, South Station, Salem, North Station, and more</li>
+          <li>Live departure countdowns updating every 20 seconds</li>
+          <li>Service alerts for delays, suspensions, and shuttle buses</li>
+          <li>Trip planner: find direct connections or 1-transfer journeys between any two stops</li>
+          <li>Save favourite stops for instant one-tap access</li>
+          <li>Live commuter rail train map showing real-time vehicle positions</li>
+          <li>Switch between lines at shared stations like Downtown Crossing and North Station</li>
+        </ul>
+
+        <h2>Popular Stops</h2>
+        <ul>
+          <li>Downtown Crossing — Red Line, Orange Line, Silver Line</li>
+          <li>Park Street — Red Line, Green Line</li>
+          <li>Government Center — Blue Line, Green Line</li>
+          <li>South Station — Red Line, Silver Line, Commuter Rail</li>
+          <li>North Station — Orange Line, Green Line, Commuter Rail</li>
+          <li>Kenmore — Green Line B, C, D</li>
+          <li>Forest Hills — Orange Line, Commuter Rail</li>
+          <li>Back Bay — Orange Line, Commuter Rail</li>
+          <li>Ruggles — Orange Line, Commuter Rail</li>
+          <li>Alewife — Red Line (northern terminus)</li>
+          <li>Braintree — Red Line (southern terminus)</li>
+          <li>Salem — Commuter Rail Newburyport/Rockport Line</li>
+          <li>Worcester — Commuter Rail Framingham/Worcester Line</li>
+        </ul>
+
+        <h2>About DWELL</h2>
+        <p>DWELL is an independent transit dashboard for Boston commuters, students, and visitors. All data comes from the official MBTA v3 real-time API. DWELL is not affiliated with or endorsed by the Massachusetts Bay Transportation Authority.</p>
+
+        <p class="loading">Loading live arrivals…</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
