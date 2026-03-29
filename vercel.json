@@ -2,9 +2,18 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+
+  "redirects": [
+    { "source": "https://www.dwellmbta.com/(.*)", "destination": "https://dwellmbta.com/$1", "permanent": true },
+    { "source": "http://www.dwellmbta.com/(.*)",  "destination": "https://dwellmbta.com/$1", "permanent": true },
+    { "source": "http://dwellmbta.com/(.*)",       "destination": "https://dwellmbta.com/$1", "permanent": true }
+  ],
+
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
+
   "headers": [
     {
       "source": "/(.*)",

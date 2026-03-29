@@ -8,7 +8,7 @@ import NextTrain from './components/NextTrain'
 import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.3.4'
+const VERSION = '2026.3.5'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────
@@ -468,15 +468,71 @@ function Header({ onLogoClick, theme, onThemeToggle }) {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [page, setPage]           = useState('landing')
+  // Read initial page from URL path so direct links work
+  const [page, setPage] = useState(() => {
+    const path = window.location.pathname
+    return {
+      '/':         'landing',
+      '/saved':    'saved',
+      '/plan':     'plan',
+      '/about':    'about',
+      '/feedback': 'feedback',
+      '/privacy':  'privacy',
+    }[path] || 'landing'
+  })
   const [selection, setSelection] = useState(null)
   const { theme, toggle: toggleTheme } = useTheme()
   const { favorites, addFavorite, removeFavorite, isFavorite } = useFavorites()
   const isDark = theme === 'dark'
 
+  // URL ↔ page mapping for real addressable routes
+  const PAGE_TO_PATH = {
+    landing:  '/',
+    arrivals: '/',    // arrivals is dynamic — stays at /
+    saved:    '/saved',
+    plan:     '/plan',
+    about:    '/about',
+    feedback: '/feedback',
+    privacy:  '/privacy',
+  }
+  const PATH_TO_PAGE = {
+    '/':         'landing',
+    '/saved':    'saved',
+    '/plan':     'plan',
+    '/about':    'about',
+    '/feedback': 'feedback',
+    '/privacy':  'privacy',
+  }
+
   const navigate = useCallback((id) => {
-    setPage(id); window.scrollTo({ top: 0, behavior: 'smooth' })
+    setPage(id)
+    const path = PAGE_TO_PATH[id] || '/'
+    if (window.location.pathname !== path) {
+      window.history.pushState({ page: id }, '', path)
+    }
+    // Keep canonical tag in sync with current URL for SEO
+    const canonical = document.querySelector('link[rel="canonical"]')
+    if (canonical) canonical.href = `https://dwellmbta.com${path}`
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const onPop = (e) => {
+      const path = window.location.pathname
+      const id = {
+        '/':         'landing',
+        '/saved':    'saved',
+        '/plan':     'plan',
+        '/about':    'about',
+        '/feedback': 'feedback',
+        '/privacy':  'privacy',
+      }[path] || 'landing'
+      setPage(id)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
   const handleCommit = useCallback((sel) => {
     setSelection(sel); navigate('arrivals')
   }, [navigate])
