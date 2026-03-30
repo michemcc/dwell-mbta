@@ -1,23 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Homepage — main arrivals dashboard -->
   <url>
     <loc>https://dwellmbta.com/</loc>
+    <lastmod>2026-03-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <!-- Plan — next train finder with transfer routing -->
   <url>
     <loc>https://dwellmbta.com/plan</loc>
+    <lastmod>2026-03-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- About — app description and feature overview -->
   <url>
     <loc>https://dwellmbta.com/about</loc>
+    <lastmod>2026-03-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.6</priority>
   </url>
+
+  <!-- Feedback — contact form -->
+  <url>
+    <loc>https://dwellmbta.com/feedback</loc>
+    <lastmod>2026-03-30</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- Privacy Policy -->
   <url>
     <loc>https://dwellmbta.com/privacy</loc>
+    <lastmod>2026-03-30</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+
+  <!-- /saved is excluded — user-specific content, not indexable -->
+
 </urlset>
