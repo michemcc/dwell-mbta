@@ -1,7 +1,7 @@
 import React from 'react'
 import { MonoLabel } from './Primitives'
 
-const VERSION = '2026.3.7'
+const VERSION = '2026.3.8'
 
 // ── Section sub-nav (About / Feedback / Privacy) ──────────────────────────────
 // Always visible within the About section so you can move between these pages

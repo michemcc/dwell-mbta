@@ -8,7 +8,7 @@ import NextTrain from './components/NextTrain'
 import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.3.7'
+const VERSION = '2026.3.8'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────

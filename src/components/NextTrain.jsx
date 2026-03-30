@@ -58,7 +58,14 @@ function StopPicker({ label, value, onSelect, placeholder }) {
           )}
           {results.map(s => (
             <button key={s.id}
-              onMouseDown={e => { e.preventDefault(); onSelect(s); setQuery(s.attributes?.name || ''); setOpen(false) }}
+              onMouseDown={async e => {
+                e.preventDefault()
+                setOpen(false)
+                setQuery(s.attributes?.name || '')
+                // Always resolve to parent station so predictions work correctly
+                const resolved = await resolveParentStop(s)
+                onSelect(resolved)
+              }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10, width: '100%',
                 padding: '10px 14px', background: 'transparent', border: 'none',
@@ -330,10 +337,23 @@ async function findTransferJourneys(fromStop, toStop, fromRoutes, toRoutes, toRo
       } catch { hubStop = { id: hubId, attributes: { name: hubId } } }
 
       // Leg 1: from → hub on fromRoute
-      const leg1Preds = await mbtaFetch(
+      // Try predictions first; fall back to schedules for CR where predictions
+      // are only published ~60 min ahead
+      let leg1Data = await mbtaFetch(
         `/predictions?filter[stop]=${fromStop.id}&filter[route]=${fromRoute.id}` +
         `&sort=departure_time&include=trip&page[limit]=6`
       )
+      if (!leg1Data.data?.length) {
+        // Fallback: use schedules (further-out CR departures)
+        try {
+          leg1Data = await mbtaFetch(
+            `/schedules?filter[stop]=${fromStop.id}&filter[route]=${fromRoute.id}` +
+            `&filter[min_time]=${new Date().toTimeString().slice(0,5)}` +
+            `&sort=departure_time&include=trip&page[limit]=6`
+          )
+        } catch {}
+      }
+      const leg1Preds = leg1Data
       const leg1Trips = {}
       ;(leg1Preds.included || []).forEach(inc => {
         if (inc.type === 'trip') leg1Trips[inc.id] = inc.attributes?.headsign || ''
@@ -417,9 +437,19 @@ export default function NextTrain() {
     setLoading(true); setError(null); setSearched(true); setJourneys([])
 
     try {
+      // Ensure we always use parent station IDs — child stop IDs cause
+      // the MBTA predictions API to return empty results
+      const [resolvedFrom, resolvedTo] = await Promise.all([
+        resolveParentStop(fromStop),
+        resolveParentStop(toStop),
+      ])
+      // Reassign so all downstream code uses the resolved stops
+      const fromStopR = resolvedFrom
+      const toStopR   = resolvedTo
+
       const [fromRoutesData, toRoutesData] = await Promise.all([
-        mbtaFetch(`/routes?filter[stop]=${fromStop.id}&sort=sort_order`),
-        mbtaFetch(`/routes?filter[stop]=${toStop.id}&sort=sort_order`),
+        mbtaFetch(`/routes?filter[stop]=${fromStopR.id}&sort=sort_order`),
+        mbtaFetch(`/routes?filter[stop]=${toStopR.id}&sort=sort_order`),
       ])
       const fromRoutes = fromRoutesData.data || []
       const toRouteIds = new Set((toRoutesData.data || []).map(r => r.id))
@@ -432,7 +462,7 @@ export default function NextTrain() {
         await Promise.all(sharedRoutes.slice(0, 4).map(async route => {
           try {
             const predData = await mbtaFetch(
-              `/predictions?filter[stop]=${fromStop.id}&filter[route]=${route.id}` +
+              `/predictions?filter[stop]=${fromStopR.id}&filter[route]=${route.id}` +
               `&sort=departure_time&include=trip&page[limit]=4`
             )
             const tripMap = {}
@@ -447,7 +477,7 @@ export default function NextTrain() {
               let arrTime = null
               if (tripId) {
                 try {
-                  const a = await mbtaFetch(`/predictions?filter[stop]=${toStop.id}&filter[trip]=${tripId}&page[limit]=1`)
+                  const a = await mbtaFetch(`/predictions?filter[stop]=${toStopR.id}&filter[trip]=${tripId}&page[limit]=1`)
                   arrTime = a.data?.[0]?.attributes?.arrival_time || a.data?.[0]?.attributes?.departure_time
                 } catch {}
               }
@@ -456,7 +486,7 @@ export default function NextTrain() {
               directJourneys.push({
                 id:   pred.id,
                 legs: [{
-                  route, fromStop, toStop,
+                  route, fromStop: fromStopR, toStop: toStopR,
                   departureTime: depTime,
                   arrivalTime:   arrTime,
                   headsign,
@@ -471,7 +501,7 @@ export default function NextTrain() {
       // 2. If no direct routes, find 1-transfer connections
       let transferJourneys = []
       if (directJourneys.length === 0) {
-        transferJourneys = await findTransferJourneys(fromStop, toStop, fromRoutes, [], toRouteIds)
+        transferJourneys = await findTransferJourneys(fromStopR, toStopR, fromRoutes, [], toRouteIds)
       }
 
       const all = [...directJourneys, ...transferJourneys]
