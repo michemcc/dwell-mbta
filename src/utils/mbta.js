@@ -50,7 +50,7 @@ export const LINE_COLORS = {
   'Green-E': { accent: '#22C55E', dim: '#14532D' },
   Silver:    { accent: '#94A3B8', dim: '#334155' },
   CR:        { accent: '#A855F7', dim: '#4C1D95' },
-  Bus:       { accent: '#E8C547', dim: '#7A6820' },
+  Bus:       { accent: '#C9961A', dim: '#7A5C10' },  // darker amber — readable on both dark and light bg
 }
 
 export function getLineColor(routeId = '') {

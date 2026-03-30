@@ -8,7 +8,7 @@ import NextTrain from './components/NextTrain'
 import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.3.6'
+const VERSION = '2026.3.7'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────
@@ -247,25 +247,43 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
       )}
 
       {/* Footer */}
-      <div style={{
-        marginTop: 44, paddingTop: 18, borderTop: '1px solid var(--border)',
-        display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center',
-      }}>
-        {[['about','About'],['feedback','Feedback'],['privacy','Privacy']].map(([id, label]) => (
-          <button key={id} onClick={() => onNavigate(id)} style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)',
-            letterSpacing: '0.1em', padding: 0, transition: 'color 0.14s',
-          }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-dim)'}
-          >{label}</button>
-        ))}
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 14 }}>
-          <DonateButton compact />
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>v{VERSION}</span>
+      <footer style={{ marginTop: 52, paddingTop: 28, borderTop: '1px solid var(--border)' }}>
+        {/* Donate — centrepiece of the footer */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+          <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-muted)', margin: 0, textAlign: 'center', lineHeight: 1.5 }}>
+            DWELL is free and independent. If it saves you time,
+          </p>
+          <DonateButton />
         </div>
-      </div>
+
+        {/* Nav links row */}
+        <div style={{
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          gap: 0, paddingTop: 20, borderTop: '1px solid var(--border)',
+        }}>
+          {[['about','About'],['feedback','Feedback'],['privacy','Privacy']].map(([id, label], i) => (
+            <React.Fragment key={id}>
+              {i > 0 && <span style={{ width: 1, height: 12, background: 'var(--border-mid)', display: 'inline-block', margin: '0 16px' }} />}
+              <button onClick={() => onNavigate(id)} style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 500,
+                color: 'var(--text-muted)', letterSpacing: '0.1em',
+                padding: 0, transition: 'color 0.14s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+              >{label}</button>
+            </React.Fragment>
+          ))}
+        </div>
+
+        {/* Version */}
+        <div style={{ textAlign: 'center', marginTop: 16, paddingBottom: 8 }}>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.1em' }}>
+            DWELL v{VERSION} · Not affiliated with the MBTA
+          </span>
+        </div>
+      </footer>
     </div>
   )
 }
@@ -369,21 +387,30 @@ function BottomNav({ page, onNavigate }) {
 }
 
 // ── Donate ────────────────────────────────────────────────────────────────────
-function DonateButton({ compact }) {
+function DonateButton() {
   return (
     <a href={DONATE_URL} target="_blank" rel="noopener noreferrer"
       style={{
-        display: 'inline-flex', alignItems: 'center', gap: compact ? 6 : 8,
-        padding: compact ? '5px 12px' : '8px 16px', borderRadius: 999,
-        background: 'transparent', border: '1px solid var(--border)',
-        color: 'var(--text-muted)', fontFamily: 'var(--mono)',
-        fontSize: compact ? 10 : 11, letterSpacing: '0.1em',
-        textDecoration: 'none', transition: 'all 0.14s', cursor: 'pointer', whiteSpace: 'nowrap',
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        padding: '10px 20px', borderRadius: 999,
+        background: 'rgba(255,221,0,0.08)',
+        border: '1.5px solid rgba(255,221,0,0.35)',
+        color: '#D4A800', fontFamily: 'var(--mono)',
+        fontSize: 12, fontWeight: 600, letterSpacing: '0.08em',
+        textDecoration: 'none', transition: 'all 0.18s', cursor: 'pointer', whiteSpace: 'nowrap',
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor='#FFDD00'; e.currentTarget.style.color='#FFDD00'; e.currentTarget.style.background='rgba(255,221,0,0.07)' }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.color='var(--text-muted)'; e.currentTarget.style.background='transparent' }}
+      onMouseEnter={e => {
+        e.currentTarget.style.background = 'rgba(255,221,0,0.15)'
+        e.currentTarget.style.borderColor = 'rgba(255,221,0,0.7)'
+        e.currentTarget.style.color = '#F0C800'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.background = 'rgba(255,221,0,0.08)'
+        e.currentTarget.style.borderColor = 'rgba(255,221,0,0.35)'
+        e.currentTarget.style.color = '#D4A800'
+      }}
     >
-      <span style={{ fontSize: compact ? 13 : 15 }}>☕</span>
+      <span style={{ fontSize: 16 }}>☕</span>
       Buy me a coffee
     </a>
   )

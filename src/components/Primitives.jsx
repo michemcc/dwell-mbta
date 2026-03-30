@@ -70,14 +70,16 @@ export function MonoLabel({ children, style }) {
 
 // ── Pill Badge ────────────────────────────────────────────────────────────────
 export function Pill({ children, color = 'var(--accent)', bg, style }) {
+  // In light mode, transparent amber on a warm beige background is nearly invisible.
+  // Use a clearly readable solid-ish background with strong border instead.
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center',
-      padding: '2px 8px', borderRadius: 999,
-      fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 500, letterSpacing: '0.1em',
+      padding: '2px 9px', borderRadius: 999,
+      fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
       color: color,
-      background: bg || `${color}18`,
-      border: `1px solid ${color}33`,
+      background: bg || `${color}22`,
+      border: `1.5px solid ${color}66`,
       ...style,
     }}>
       {children}
