@@ -457,12 +457,12 @@ function Header({ onLogoClick, theme, onThemeToggle }) {
         <button onClick={onThemeToggle} title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           style={{
             display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
-            padding: isMobile ? '6px 8px' : '5px 10px',
+            padding: isMobile ? '9px 13px' : '5px 10px',
             borderRadius: 'var(--radius-sm)',
             background: isDark ? 'rgba(242,202,69,0.12)' : 'var(--bg-3)',
             border: isDark ? '1px solid rgba(242,202,69,0.35)' : '1px solid var(--border)',
             cursor: 'pointer', transition: 'all 0.16s',
-            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em',
+            fontFamily: 'var(--mono)', fontSize: isMobile ? 12 : 10, letterSpacing: '0.1em',
             color: isDark ? '#F2CA45' : 'var(--text-muted)',
           }}
           onMouseEnter={e => {
