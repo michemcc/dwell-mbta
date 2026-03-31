@@ -22,7 +22,7 @@ function CRTrainModal({ route, onClose }) {
 
   const TILE = 256
   const lc   = getLineColor(route?.id)
-  const MODAL_H = Math.min(window.innerHeight * 0.72, 520)
+  // Map height is driven by dims.h (ResizeObserver) not a fixed constant
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -49,7 +49,7 @@ function CRTrainModal({ route, onClose }) {
     const py = latToTileY(lat)
     return {
       x: dims.w / 2 + (px - cx) * TILE,
-      y: MODAL_H / 2 + (py - cy) * TILE,
+      y: (dims.h || 400) / 2 + (py - cy) * TILE,
     }
   }, [center, zoom, dims.w, MODAL_H])
 
@@ -58,7 +58,7 @@ function CRTrainModal({ route, onClose }) {
     const cx = lngToTileX(center.lng)
     const cy = latToTileY(center.lat)
     const tileX = cx + (px - dims.w / 2) / TILE
-    const tileY = cy + (py - MODAL_H / 2) / TILE
+    const tileY = cy + (py - (dims.h || 400) / 2) / TILE
     const lng = tileX / n * 360 - 180
     const latR = Math.atan(Math.sinh(Math.PI * (1 - 2 * tileY / n)))
     return { lat: latR * 180 / Math.PI, lng }
@@ -111,7 +111,7 @@ function CRTrainModal({ route, onClose }) {
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) setIsDragging(true)
     const sc = dragRef.current.startCenter
     // Move center by the opposite of the drag delta
-    const newCenter = pixelToLatLng(dims.w / 2 - dx, MODAL_H / 2 - dy)
+    const newCenter = pixelToLatLng(dims.w / 2 - dx, (dims.h || 400) / 2 - dy)
     // But we want the startCenter reference point, not current center
     const cxT = lngToTileX(sc.lng)
     const cyT = latToTileY(sc.lat)
@@ -203,27 +203,38 @@ function CRTrainModal({ route, onClose }) {
   return (
     <div onClick={handleBackdrop} style={{
       position: 'fixed', inset: 0, zIndex: 800,
-      background: 'rgba(5,6,10,0.88)', backdropFilter: 'blur(8px)',
+      background: 'rgba(5,6,10,0.9)', backdropFilter: 'blur(10px)',
       display: 'flex',
+      // Mobile: bottom sheet anchored to bottom of screen
+      // Desktop: centered dialog taking up most of the viewport
       alignItems: isMobileLayout ? 'flex-end' : 'center',
       justifyContent: 'center',
-      padding: isMobileLayout ? '0 0 env(safe-area-inset-bottom)' : '20px',
+      padding: isMobileLayout ? '0' : '16px',
     }}>
       <div onClick={e => e.stopPropagation()} style={{
-        width: '100%', maxWidth: 860,
-        maxHeight: isMobileLayout ? '92vh' : '90vh',
+        width: '100%',
+        maxWidth: isMobileLayout ? '100%' : '900px',
+        // Mobile: 90% of screen height so map is large and comfortable
+        // Desktop: nearly full viewport height
+        height: isMobileLayout ? '90vh' : '94vh',
         display: 'flex', flexDirection: 'column',
         background: 'var(--bg-2)',
-        borderRadius: isMobileLayout ? '16px 16px 0 0' : '16px',
-        border: '1px solid var(--border)',
+        borderRadius: isMobileLayout ? '20px 20px 0 0' : '16px',
+        border: '1px solid var(--border-mid)',
         overflow: 'hidden', animation: 'fadeUp 0.22s ease both',
-        boxShadow: '0 24px 64px rgba(0,0,0,0.7)',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06)',
       }}>
+        {/* Mobile drag handle */}
+        {isMobileLayout && (
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 4, flexShrink: 0 }}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-mid)' }} />
+          </div>
+        )}
 
         {/* ── Header ── */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px',
-          borderBottom: '1px solid var(--border)', background: 'var(--bg-3)',
+          borderBottom: '1px solid var(--border)', background: 'var(--bg-3)', flexShrink: 0,
         }}>
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: lc.accent, boxShadow: `0 0 8px ${lc.accent}`, flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -320,9 +331,9 @@ function CRTrainModal({ route, onClose }) {
             const { x, y } = latLngToPixel(lat, lng)
 
             // Skip off-screen (with margin)
-            if (x < -40 || x > dims.w + 40 || y < -40 || y > MODAL_H + 40) return null
+            if (x < -40 || x > dims.w + 40 || y < -40 || y > (dims.h || 400) + 40) return null
 
-            const markerSize = isSelected ? 36 : isMoving ? 28 : 24
+            const markerSize = isSelected ? 40 : isMoving ? 32 : 26
 
             return (
               <div key={v.id} style={{ position: 'absolute', left: x, top: y, transform: 'translate(-50%,-50%)', zIndex: isSelected ? 50 : isMoving ? 20 : 10 }}>
@@ -345,20 +356,29 @@ function CRTrainModal({ route, onClose }) {
                     position: 'relative', overflow: 'visible',
                   }}
                 >
-                  {/* Direction arrow — only when bearing is known and train is moving */}
-                  {bearing != null && isMoving && (
-                    <div style={{
-                      position: 'absolute',
-                      top: -10, left: '50%',
-                      width: 0, height: 0,
-                      marginLeft: -5,
-                      borderLeft: '5px solid transparent',
-                      borderRight: '5px solid transparent',
-                      borderBottom: `8px solid ${lc.accent}`,
-                      transformOrigin: '50% calc(100% + 2px)',
-                      transform: `rotate(${bearing}deg)`,
-                      filter: `drop-shadow(0 0 3px ${lc.accent})`,
-                    }} />
+                  {/* Direction arrow — bold SVG chevron, rotates around marker centre */}
+                  {bearing != null && (
+                    <svg
+                      width="32" height="32"
+                      viewBox="0 0 32 32"
+                      style={{
+                        position: 'absolute',
+                        top: '50%', left: '50%',
+                        marginTop: -16, marginLeft: -16,
+                        transform: `rotate(${bearing}deg)`,
+                        pointerEvents: 'none',
+                        overflow: 'visible',
+                        filter: `drop-shadow(0 0 4px ${lc.accent})`,
+                        opacity: isMoving ? 1 : 0.45,
+                      }}
+                    >
+                      {/* Arrow head pointing UP (north = 0°), centred on 16,16 */}
+                      {/* Stem from centre, head at top — clearly outside the marker circle */}
+                      <line x1="16" y1="16" x2="16" y2="2"
+                        stroke={lc.accent} strokeWidth="2.5" strokeLinecap="round" />
+                      <polygon points="16,0 11,8 21,8"
+                        fill={lc.accent} />
+                    </svg>
                   )}
                   {/* Train icon — counter-rotated so it stays upright */}
                   <span style={{ fontSize: isSelected ? 16 : 12, lineHeight: 1, userSelect: 'none', color: isSelected ? '#000' : lc.accent }}>🚆</span>
@@ -482,7 +502,7 @@ function CRTrainModal({ route, onClose }) {
 
         {/* ── Train list ── */}
         {activeVehicles.length > 0 && (
-          <div style={{ maxHeight: 150, overflowY: 'auto', borderTop: '1px solid var(--border)' }}>
+          <div style={{ maxHeight: 160, overflowY: 'auto', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
             {activeVehicles.map(v => {
               const status  = v.attributes?.current_status?.replace(/_/g, ' ') || '—'
               const label   = v.attributes?.label || v.id.slice(-4)
