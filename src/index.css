@@ -182,6 +182,16 @@ body::after {
 /* ── Inputs & textareas ───────────────────────────────────────────── */
 input::placeholder, textarea::placeholder { color: var(--text-dim); }
 
+/* ── Prevent iOS Safari auto-zoom on input focus ─────────────────────────── */
+/* Any input with font-size < 16px triggers zoom on iOS. This ensures all     */
+/* inputs use at least 16px on touch devices, then scales the visual size      */
+/* back down with transform so the design is preserved.                         */
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
 /* ── Utility ──────────────────────────────────────────────────────── */
 .accent-rule {
   height: 1px;

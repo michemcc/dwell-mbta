@@ -4,248 +4,499 @@ import { usePredictions, useClock, useStops, useRoutesForStop, useVehicles } fro
 import { Spinner, LiveDot, MonoLabel, Divider, ErrorBox, SkeletonRow, Pill } from './Primitives'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CR Train Map Modal — shows live vehicles for a Commuter Rail route on a map
+// CR Train Map Modal — interactive, zoomable, pannable live train map
 // ─────────────────────────────────────────────────────────────────────────────
 function CRTrainModal({ route, onClose }) {
   const { vehicles, loading, refresh } = useVehicles(route?.id, 15000)
   const containerRef = useRef(null)
-  const [dims, setDims] = useState({ w: 0, h: 0 })
+  const [dims, setDims]           = useState({ w: 0, h: 0 })
+  const [zoom, setZoom]           = useState(9)
+  const [center, setCenter]       = useState({ lat: 42.36, lng: -71.06 })
+  const [selectedVehicle, setSelectedVehicle] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  // Pointer drag state (ref so no re-renders during drag)
+  const dragRef = useRef({ active: false, startX: 0, startY: 0, startCenter: null })
+  // Pinch state
+  const pinchRef = useRef({ active: false, startDist: 0, startZoom: 9 })
+
   const TILE = 256
-  const ZOOM = 9  // wider zoom for commuter rail
-
-  // Boston/eastern MA bounding box at zoom 9
-  const CENTER = { lat: 42.36, lng: -71.06 }
-
-  // Convert lat/lng to tile pixel position within 3×3 tile grid
-  const n     = Math.pow(2, ZOOM)
-  const cxF   = (CENTER.lng + 180) / 360 * n
-  const cyLatR = CENTER.lat * Math.PI / 180
-  const cyF   = (1 - Math.log(Math.tan(cyLatR) + 1 / Math.cos(cyLatR)) / Math.PI) / 2 * n
-  const cx    = Math.floor(cxF)
-  const cy    = Math.floor(cyF)
+  const lc   = getLineColor(route?.id)
+  const MODAL_H = Math.min(window.innerHeight * 0.72, 520)
 
   useEffect(() => {
     if (!containerRef.current) return
-    const ro = new ResizeObserver(([e]) => setDims({ w: Math.round(e.contentRect.width), h: Math.round(e.contentRect.height) }))
+    const ro = new ResizeObserver(([e]) =>
+      setDims({ w: Math.round(e.contentRect.width), h: Math.round(e.contentRect.height) }))
     ro.observe(containerRef.current)
     return () => ro.disconnect()
   }, [])
 
-  const lngToX = (lng) => {
-    const xF = (lng + 180) / 360 * n
-    return (xF - cx + 1) * TILE
-  }
-  const latToY = (lat) => {
-    const latR = lat * Math.PI / 180
-    const yF   = (1 - Math.log(Math.tan(latR) + 1 / Math.cos(latR)) / Math.PI) / 2 * n
-    return (yF - cy + 1) * TILE
+  // ── Tile/pixel math ─────────────────────────────────────────────────────────
+  const n = Math.pow(2, zoom)
+
+  const lngToTileX = (lng) => (lng + 180) / 360 * n
+  const latToTileY = (lat) => {
+    const r = lat * Math.PI / 180
+    return (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n
   }
 
+  // Convert lat/lng to pixel position relative to map center
+  const latLngToPixel = useCallback((lat, lng) => {
+    const cx = lngToTileX(center.lng)
+    const cy = latToTileY(center.lat)
+    const px = lngToTileX(lng)
+    const py = latToTileY(lat)
+    return {
+      x: dims.w / 2 + (px - cx) * TILE,
+      y: MODAL_H / 2 + (py - cy) * TILE,
+    }
+  }, [center, zoom, dims.w, MODAL_H])
+
+  // Convert pixel offset from center back to lat/lng
+  const pixelToLatLng = useCallback((px, py) => {
+    const cx = lngToTileX(center.lng)
+    const cy = latToTileY(center.lat)
+    const tileX = cx + (px - dims.w / 2) / TILE
+    const tileY = cy + (py - MODAL_H / 2) / TILE
+    const lng = tileX / n * 360 - 180
+    const latR = Math.atan(Math.sinh(Math.PI * (1 - 2 * tileY / n)))
+    return { lat: latR * 180 / Math.PI, lng }
+  }, [center, zoom, dims.w, MODAL_H])
+
+  // ── Tile grid ───────────────────────────────────────────────────────────────
+  const centerTileX = Math.floor(lngToTileX(center.lng))
+  const centerTileY = Math.floor(latToTileY(center.lat))
+  const GRID = 5  // 5×5 grid to allow panning without white edges
   const tiles = []
-  for (let dy = -1; dy <= 1; dy++)
-    for (let dx = -1; dx <= 1; dx++) {
-      const tx = cx + dx, ty = cy + dy
-      const s  = ['a','b','c'][(Math.abs(tx + ty)) % 3]
-      tiles.push({ key: `${tx}-${ty}`, url: `https://${s}.tile.openstreetmap.org/${ZOOM}/${tx}/${ty}.png`, dx, dy })
+  for (let dy = -Math.floor(GRID/2); dy <= Math.floor(GRID/2); dy++)
+    for (let dx = -Math.floor(GRID/2); dx <= Math.floor(GRID/2); dx++) {
+      const tx = centerTileX + dx
+      const ty = centerTileY + dy
+      if (tx < 0 || ty < 0 || tx >= n || ty >= n) continue
+      const s = ['a','b','c'][(Math.abs(tx + ty)) % 3]
+      const tilePos = latLngToPixel(
+        (Math.atan(Math.sinh(Math.PI * (1 - 2 * (ty + 0.5) / n))) * 180 / Math.PI),
+        ((tx + 0.5) / n * 360 - 180)
+      )
+      tiles.push({ key: `${zoom}-${tx}-${ty}`, url: `https://${s}.tile.openstreetmap.org/${zoom}/${tx}/${ty}.png`, tx, ty })
     }
 
-  const lc = getLineColor(route?.id)
-  const activeVehicles = vehicles.filter(v => {
-    const lat = v.attributes?.latitude, lng = v.attributes?.longitude
-    return lat && lng
-  })
+  // ── Zoom helpers ─────────────────────────────────────────────────────────────
+  const clampZoom = (z) => Math.max(7, Math.min(14, z))
 
-  const MODAL_H = Math.min(520, window.innerHeight * 0.8)
+  const zoomAt = useCallback((newZoom, pivotX, pivotY) => {
+    // Keep the point under the cursor/pinch fixed when zooming
+    const pivotLatLng = pixelToLatLng(pivotX, pivotY)
+    setZoom(z => {
+      const clamped = clampZoom(newZoom)
+      if (clamped === z) return z
+      return clamped
+    })
+    setCenter(pivotLatLng)
+  }, [pixelToLatLng])
 
-  // Close on backdrop click
-  const handleBackdrop = e => { if (e.target === e.currentTarget) onClose() }
+  // ── Pointer drag handlers ────────────────────────────────────────────────────
+  const onPointerDown = (e) => {
+    if (e.touches?.length === 2) return  // let pinch handler take over
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    dragRef.current = { active: true, startX: e.clientX, startY: e.clientY, startCenter: { ...center } }
+    setIsDragging(false)
+  }
+
+  const onPointerMove = (e) => {
+    if (!dragRef.current.active) return
+    const dx = e.clientX - dragRef.current.startX
+    const dy = e.clientY - dragRef.current.startY
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) setIsDragging(true)
+    const sc = dragRef.current.startCenter
+    // Move center by the opposite of the drag delta
+    const newCenter = pixelToLatLng(dims.w / 2 - dx, MODAL_H / 2 - dy)
+    // But we want the startCenter reference point, not current center
+    const cxT = lngToTileX(sc.lng)
+    const cyT = latToTileY(sc.lat)
+    const newTileX = cxT - dx / TILE
+    const newTileY = cyT - dy / TILE
+    const newLng = newTileX / n * 360 - 180
+    const newLatR = Math.atan(Math.sinh(Math.PI * (1 - 2 * newTileY / n)))
+    setCenter({ lat: newLatR * 180 / Math.PI, lng: newLng })
+  }
+
+  const onPointerUp = (e) => {
+    dragRef.current.active = false
+    setTimeout(() => setIsDragging(false), 50)
+  }
+
+  // ── Pinch-to-zoom (touch) ────────────────────────────────────────────────────
+  const onTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX
+      const dy = e.touches[0].clientY - e.touches[1].clientY
+      pinchRef.current = {
+        active: true,
+        startDist: Math.hypot(dx, dy),
+        startZoom: zoom,
+        midX: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+        midY: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+      }
+      dragRef.current.active = false
+    }
+  }
+
+  const onTouchMove = (e) => {
+    if (!pinchRef.current.active || e.touches.length !== 2) return
+    e.preventDefault()
+    const dx = e.touches[0].clientX - e.touches[1].clientX
+    const dy = e.touches[0].clientY - e.touches[1].clientY
+    const dist = Math.hypot(dx, dy)
+    const scale = dist / pinchRef.current.startDist
+    const newZoom = clampZoom(Math.round(pinchRef.current.startZoom + Math.log2(scale)))
+    if (newZoom !== zoom) {
+      const rect = containerRef.current?.getBoundingClientRect() || { left: 0, top: 0 }
+      zoomAt(newZoom, pinchRef.current.midX - rect.left, pinchRef.current.midY - rect.top)
+    }
+  }
+
+  const onTouchEnd = () => { pinchRef.current.active = false }
+
+  // ── Scroll wheel zoom ────────────────────────────────────────────────────────
+  const onWheel = (e) => {
+    e.preventDefault()
+    const rect = containerRef.current?.getBoundingClientRect() || { left: 0, top: 0 }
+    const pivotX = e.clientX - rect.left
+    const pivotY = e.clientY - rect.top
+    const delta  = e.deltaY > 0 ? -1 : 1
+    zoomAt(zoom + delta, pivotX, pivotY)
+  }
+
+  // ── Fit all trains button ────────────────────────────────────────────────────
+  const fitTrains = () => {
+    const active = vehicles.filter(v => v.attributes?.latitude && v.attributes?.longitude)
+    if (!active.length) return
+    if (active.length === 1) {
+      setCenter({ lat: active[0].attributes.latitude, lng: active[0].attributes.longitude })
+      setZoom(12)
+      return
+    }
+    const lats = active.map(v => v.attributes.latitude)
+    const lngs = active.map(v => v.attributes.longitude)
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats)
+    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs)
+    setCenter({ lat: (minLat + maxLat) / 2, lng: (minLng + maxLng) / 2 })
+    // Pick zoom level that fits the bounding box
+    const latSpan = maxLat - minLat + 0.05
+    const lngSpan = maxLng - minLng + 0.05
+    const fitZoom = Math.floor(Math.min(
+      Math.log2(dims.h / TILE / (latSpan / 180 * 256)),
+      Math.log2(dims.w / TILE / (lngSpan / 360 * 256))
+    ))
+    setZoom(clampZoom(fitZoom))
+  }
+
+  const activeVehicles = vehicles.filter(v => v.attributes?.latitude && v.attributes?.longitude)
+
+  // Close selected vehicle when clicking backdrop
+  const handleBackdrop = (e) => { if (e.target === e.currentTarget) onClose() }
 
   return (
-    <div
-      onClick={handleBackdrop}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 800,
-        background: 'rgba(7,8,12,0.88)', backdropFilter: 'blur(6px)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        padding: '0 0 env(safe-area-inset-bottom)',
-      }}
-    >
-      <div
-        style={{
-          width: '100%', maxWidth: 860,
-          background: 'var(--bg-2)', borderRadius: '16px 16px 0 0',
-          border: '1px solid var(--border)', borderBottom: 'none',
-          overflow: 'hidden',
-          animation: 'fadeUp 0.22s ease both',
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
+    <div onClick={handleBackdrop} style={{
+      position: 'fixed', inset: 0, zIndex: 800,
+      background: 'rgba(5,6,10,0.9)', backdropFilter: 'blur(6px)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+      padding: '0 0 env(safe-area-inset-bottom)',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: '100%', maxWidth: 860,
+        background: 'var(--bg-2)', borderRadius: '16px 16px 0 0',
+        border: '1px solid var(--border)', borderBottom: 'none',
+        overflow: 'hidden', animation: 'fadeUp 0.22s ease both',
+      }}>
+
+        {/* ── Header ── */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px',
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--bg-3)',
+          display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px',
+          borderBottom: '1px solid var(--border)', background: 'var(--bg-3)',
         }}>
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: lc.accent, boxShadow: `0 0 8px ${lc.accent}` }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: 'var(--display)', fontSize: 16, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.01em' }}>
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: lc.accent, boxShadow: `0 0 8px ${lc.accent}`, flexShrink: 0 }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: 'var(--display)', fontSize: 15, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.01em' }}>
               {route?.attributes?.long_name || route?.id}
             </div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.1em', marginTop: 2 }}>
-              LIVE TRAINS · UPDATES EVERY 15s
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', marginTop: 1 }}>
+              {loading ? 'Loading…' : `${activeVehicles.length} active train${activeVehicles.length !== 1 ? 's' : ''} · pinch or scroll to zoom · drag to pan`}
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {loading ? <Spinner size={12} /> : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <LiveDot color="#3DBA7F" size={6} />
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--green)', letterSpacing: '0.1em' }}>
-                  {activeVehicles.length} TRAINS
-                </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            {!loading && activeVehicles.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <LiveDot color="#3FCF84" size={6} />
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--green)', letterSpacing: '0.1em' }}>LIVE</span>
               </div>
             )}
             <button onClick={onClose} style={{
-              width: 30, height: 30, borderRadius: '50%',
-              background: 'var(--bg-4)', border: '1px solid var(--border)',
+              width: 32, height: 32, borderRadius: '50%',
+              background: 'var(--bg-4)', border: '1px solid var(--border-mid)',
               color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--mono)',
-            }}>✕</button>
+              transition: 'all 0.14s', flexShrink: 0,
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--red)'; e.currentTarget.style.color = '#fff' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-4)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+            >✕</button>
           </div>
         </div>
 
-        {/* Map */}
-        <div ref={containerRef} style={{ position: 'relative', width: '100%', height: MODAL_H, background: 'var(--bg-3)', overflow: 'hidden' }}>
-          {/* Tile grid */}
-          <div style={{
-            position: 'absolute',
-            left: dims.w / 2 - lngToX(CENTER.lng),
-            top:  MODAL_H / 2 - latToY(CENTER.lat),
-            width: TILE * 3, height: TILE * 3,
-            display: 'grid',
-            gridTemplateColumns: `repeat(3,${TILE}px)`,
-            gridTemplateRows:    `repeat(3,${TILE}px)`,
-            filter: 'brightness(0.4) saturate(0.45)',
-          }}>
-            {tiles.map(t => (
-              <img key={t.key} src={t.url} width={TILE} height={TILE}
-                style={{ display: 'block', gridColumn: t.dx + 2, gridRow: t.dy + 2 }}
-                crossOrigin="anonymous" alt="" loading="eager" />
-            ))}
-          </div>
+        {/* ── Map ── */}
+        <div
+          ref={containerRef}
+          style={{ position: 'relative', width: '100%', height: MODAL_H, background: '#0a0c10', overflow: 'hidden', cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none' }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onWheel={onWheel}
+        >
+          {/* Tile images */}
+          {dims.w > 0 && (() => {
+            const renderedTiles = []
+            for (let dy = -3; dy <= 3; dy++) {
+              for (let dx = -3; dx <= 3; dx++) {
+                const tx = centerTileX + dx
+                const ty = centerTileY + dy
+                if (tx < 0 || ty < 0 || tx >= n || ty >= n) continue
+                const tileLat = Math.atan(Math.sinh(Math.PI * (1 - 2 * (ty + 0.5) / n))) * 180 / Math.PI
+                const tileLng = (tx + 0.5) / n * 360 - 180
+                const tileCornerLat = Math.atan(Math.sinh(Math.PI * (1 - 2 * ty / n))) * 180 / Math.PI
+                const tileCornerLng = tx / n * 360 - 180
+                const cornerPx = latLngToPixel(tileCornerLat, tileCornerLng)
+                const s = ['a','b','c'][(Math.abs(tx + ty)) % 3]
+                renderedTiles.push(
+                  <img key={`${zoom}-${tx}-${ty}`}
+                    src={`https://${s}.tile.openstreetmap.org/${zoom}/${tx}/${ty}.png`}
+                    style={{
+                      position: 'absolute',
+                      left: cornerPx.x, top: cornerPx.y,
+                      width: TILE, height: TILE,
+                      display: 'block',
+                      filter: 'brightness(0.45) saturate(0.5)',
+                      imageRendering: 'pixelated',
+                    }}
+                    crossOrigin="anonymous" alt="" draggable={false}
+                  />
+                )
+              }
+            }
+            return renderedTiles
+          })()}
 
           {/* Vignette */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none',
-            background: 'radial-gradient(ellipse at center, transparent 30%, rgba(7,8,12,0.65) 100%)',
-          }} />
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse at center, transparent 40%, rgba(5,6,10,0.55) 100%)' }} />
 
-          {/* Vehicle markers */}
+          {/* Train markers */}
           {dims.w > 0 && activeVehicles.map(v => {
-            const lat = v.attributes?.latitude
-            const lng = v.attributes?.longitude
-            if (!lat || !lng) return null
+            const lat     = v.attributes.latitude
+            const lng     = v.attributes.longitude
+            const bearing = v.attributes?.bearing
+            const status  = v.attributes?.current_status || ''
+            const label   = v.attributes?.label || v.id.slice(-4)
+            const speed   = v.attributes?.speed
+            const isMoving    = status === 'IN_TRANSIT_TO'
+            const isBoarding  = status === 'STOPPED_AT'
+            const isSelected  = selectedVehicle?.id === v.id
+            const { x, y } = latLngToPixel(lat, lng)
 
-            const mapX = dims.w / 2 + lngToX(lng) - lngToX(CENTER.lng)
-            const mapY = MODAL_H / 2 + latToY(lat) - latToY(CENTER.lat)
+            // Skip off-screen (with margin)
+            if (x < -40 || x > dims.w + 40 || y < -40 || y > MODAL_H + 40) return null
 
-            if (mapX < -20 || mapX > dims.w + 20 || mapY < -20 || mapY > MODAL_H + 20) return null
-
-            const status    = v.attributes?.current_status || ''
-            const bearing   = v.attributes?.bearing
-            const label     = v.attributes?.label || v.id.slice(-3)
-            const isMoving  = status === 'IN_TRANSIT_TO'
-            const isBoarding = status === 'STOPPED_AT'
+            const markerSize = isSelected ? 36 : isMoving ? 28 : 24
 
             return (
-              <div
-                key={v.id}
-                style={{
-                  position: 'absolute',
-                  left: mapX, top: mapY,
-                  transform: 'translate(-50%, -50%)',
-                  zIndex: isMoving ? 20 : 10,
-                  cursor: 'default',
-                  transition: 'left 1s ease, top 1s ease',
-                }}
-                title={`Train ${label} · ${status.replace(/_/g, ' ')}`}
-              >
-                {/* Pulse for boarding trains */}
+              <div key={v.id} style={{ position: 'absolute', left: x, top: y, transform: 'translate(-50%,-50%)', zIndex: isSelected ? 50 : isMoving ? 20 : 10 }}>
+                {/* Pulse ring for boarding */}
                 {isBoarding && (
-                  <div style={{
-                    position: 'absolute', inset: -6, borderRadius: '50%',
-                    border: `1.5px solid ${lc.accent}`,
-                    animation: 'pulse-dot 2s ease-out infinite',
-                  }} />
+                  <div style={{ position: 'absolute', inset: -8, borderRadius: '50%', border: `2px solid ${lc.accent}`, animation: 'pulse-dot 2s ease-out infinite', pointerEvents: 'none' }} />
                 )}
-                {/* Train icon */}
-                <div style={{
-                  width: isMoving ? 28 : 24,
-                  height: isMoving ? 28 : 24,
-                  borderRadius: '50%',
-                  background: isBoarding ? lc.accent : 'var(--bg-4)',
-                  border: `2px solid ${lc.accent}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: `0 0 ${isMoving ? 12 : 6}px ${lc.accent}66`,
-                  transform: bearing != null ? `rotate(${bearing}deg)` : undefined,
-                  transition: 'all 0.3s',
-                }}>
-                  <span style={{ fontSize: 12, transform: bearing != null ? `rotate(-${bearing}deg)` : undefined }}>🚆</span>
-                </div>
-                {/* Label */}
+
+                {/* Marker button */}
+                <button
+                  onClick={e => { e.stopPropagation(); setSelectedVehicle(isSelected ? null : v) }}
+                  style={{
+                    width: markerSize, height: markerSize, borderRadius: '50%',
+                    background: isSelected ? lc.accent : isBoarding ? `${lc.accent}dd` : 'rgba(10,12,18,0.92)',
+                    border: `2.5px solid ${isSelected ? '#fff' : lc.accent}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: `0 0 ${isSelected ? 20 : isMoving ? 12 : 6}px ${lc.accent}${isSelected ? 'cc' : '66'}`,
+                    cursor: 'pointer', padding: 0, outline: 'none',
+                    transition: 'all 0.2s',
+                    position: 'relative', overflow: 'visible',
+                  }}
+                >
+                  {/* Direction arrow — only when bearing is known and train is moving */}
+                  {bearing != null && isMoving && (
+                    <div style={{
+                      position: 'absolute',
+                      top: -10, left: '50%',
+                      width: 0, height: 0,
+                      marginLeft: -5,
+                      borderLeft: '5px solid transparent',
+                      borderRight: '5px solid transparent',
+                      borderBottom: `8px solid ${lc.accent}`,
+                      transformOrigin: '50% calc(100% + 2px)',
+                      transform: `rotate(${bearing}deg)`,
+                      filter: `drop-shadow(0 0 3px ${lc.accent})`,
+                    }} />
+                  )}
+                  {/* Train icon — counter-rotated so it stays upright */}
+                  <span style={{ fontSize: isSelected ? 16 : 12, lineHeight: 1, userSelect: 'none', color: isSelected ? '#000' : lc.accent }}>🚆</span>
+                </button>
+
+                {/* Label below marker */}
                 <div style={{
                   position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-                  marginTop: 3, padding: '1px 5px',
-                  background: 'rgba(7,8,12,0.88)',
-                  border: `1px solid ${lc.accent}44`,
-                  borderRadius: 3,
-                  fontFamily: 'var(--mono)', fontSize: 9, color: lc.accent,
-                  letterSpacing: '0.06em', whiteSpace: 'nowrap',
+                  marginTop: 4, padding: '2px 6px',
+                  background: 'rgba(5,6,10,0.92)', border: `1px solid ${lc.accent}55`,
+                  borderRadius: 4, fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700,
+                  color: lc.accent, letterSpacing: '0.06em', whiteSpace: 'nowrap',
+                  pointerEvents: 'none',
                 }}>{label}</div>
               </div>
             )
           })}
 
+          {/* Selected vehicle detail popup */}
+          {selectedVehicle && dims.w > 0 && (() => {
+            const { x, y } = latLngToPixel(selectedVehicle.attributes.latitude, selectedVehicle.attributes.longitude)
+            const popupW = 200
+            const popupH = 100
+            const popupX = Math.max(8, Math.min(dims.w - popupW - 8, x - popupW / 2))
+            const popupY = y - popupH - 52  // above the marker
+            const sv = selectedVehicle
+            const status  = sv.attributes?.current_status?.replace(/_/g, ' ').toLowerCase() || '—'
+            const speed   = sv.attributes?.speed != null ? `${Math.round(sv.attributes.speed)} km/h` : null
+            const bearing = sv.attributes?.bearing != null ? `${Math.round(sv.attributes.bearing)}°` : null
+            const label   = sv.attributes?.label || sv.id.slice(-4)
+            return (
+              <div style={{
+                position: 'absolute', left: popupX, top: Math.max(8, popupY),
+                width: popupW, background: 'rgba(9,12,18,0.97)',
+                border: `1px solid ${lc.accent}66`, borderRadius: 8,
+                padding: '10px 12px', zIndex: 60,
+                boxShadow: `0 4px 20px rgba(0,0,0,0.6), 0 0 0 1px ${lc.accent}22`,
+                pointerEvents: 'none',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: lc.accent, flexShrink: 0 }} />
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: lc.accent }}>Train {label}</span>
+                </div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.8, textTransform: 'capitalize' }}>
+                  <div>{status}</div>
+                  {speed && <div>Speed: {speed}</div>}
+                  {bearing && <div>Heading: {bearing}</div>}
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Zoom controls */}
+          <div style={{ position: 'absolute', right: 12, bottom: 28, display: 'flex', flexDirection: 'column', gap: 4, zIndex: 30 }}>
+            <button onClick={() => setZoom(z => clampZoom(z + 1))} style={{
+              width: 36, height: 36, background: 'rgba(9,12,18,0.92)', border: '1px solid var(--border-mid)',
+              borderRadius: 8, color: 'var(--text)', fontSize: 20, lineHeight: 1,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 300, transition: 'all 0.14s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = lc.accent; e.currentTarget.style.color = lc.accent }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-mid)'; e.currentTarget.style.color = 'var(--text)' }}
+            >+</button>
+            <button onClick={() => setZoom(z => clampZoom(z - 1))} style={{
+              width: 36, height: 36, background: 'rgba(9,12,18,0.92)', border: '1px solid var(--border-mid)',
+              borderRadius: 8, color: 'var(--text)', fontSize: 20, lineHeight: 1,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 300, transition: 'all 0.14s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = lc.accent; e.currentTarget.style.color = lc.accent }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-mid)'; e.currentTarget.style.color = 'var(--text)' }}
+            >−</button>
+          </div>
+
+          {/* Fit all trains button */}
+          {activeVehicles.length > 0 && (
+            <button onClick={fitTrains} style={{
+              position: 'absolute', left: 12, bottom: 28, zIndex: 30,
+              padding: '7px 12px', background: 'rgba(9,12,18,0.92)',
+              border: '1px solid var(--border-mid)', borderRadius: 8,
+              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.08em',
+              color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.14s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = lc.accent; e.currentTarget.style.color = lc.accent }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-mid)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+            >⊡ FIT ALL</button>
+          )}
+
+          {/* Zoom level indicator */}
+          <div style={{ position: 'absolute', left: 12, top: 12, background: 'rgba(9,12,18,0.7)', borderRadius: 4, padding: '2px 7px', fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-dim)', pointerEvents: 'none', zIndex: 10 }}>
+            z{zoom}
+          </div>
+
           {/* OSM attribution */}
-          <div style={{
-            position: 'absolute', bottom: 6, right: 8,
-            fontFamily: 'var(--mono)', fontSize: 8, color: 'rgba(255,255,255,0.3)',
-            pointerEvents: 'none', zIndex: 5,
-          }}>© OpenStreetMap</div>
+          <div style={{ position: 'absolute', bottom: 6, right: 8, fontFamily: 'var(--mono)', fontSize: 8, color: 'rgba(255,255,255,0.25)', pointerEvents: 'none', zIndex: 5 }}>
+            © OpenStreetMap
+          </div>
 
           {/* Empty state */}
           {!loading && activeVehicles.length === 0 && (
-            <div style={{
-              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.08em',
-            }}>
-              No active trains on this route
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8 }}>
+              <span style={{ fontSize: 28 }}>🚆</span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>No active trains on this route</span>
+            </div>
+          )}
+
+          {loading && activeVehicles.length === 0 && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              <Spinner size={14} />
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>Loading trains…</span>
             </div>
           )}
         </div>
 
-        {/* Train list below map */}
+        {/* ── Train list ── */}
         {activeVehicles.length > 0 && (
-          <div style={{ maxHeight: 160, overflowY: 'auto', borderTop: '1px solid var(--border)' }}>
+          <div style={{ maxHeight: 150, overflowY: 'auto', borderTop: '1px solid var(--border)' }}>
             {activeVehicles.map(v => {
-              const status = v.attributes?.current_status?.replace(/_/g, ' ') || '—'
-              const label  = v.attributes?.label || v.id.slice(-4)
-              const speed  = v.attributes?.speed
+              const status  = v.attributes?.current_status?.replace(/_/g, ' ') || '—'
+              const label   = v.attributes?.label || v.id.slice(-4)
+              const speed   = v.attributes?.speed
+              const isSelected = selectedVehicle?.id === v.id
               return (
-                <div key={v.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 12, padding: '9px 20px',
-                  borderBottom: '1px solid var(--border)',
-                }}>
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: lc.accent, flexShrink: 0 }} />
-                  <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text)', minWidth: 40 }}>Train {label}</span>
-                  <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.06em', flex: 1, textTransform: 'capitalize' }}>
+                <div key={v.id}
+                  onClick={() => {
+                    setSelectedVehicle(isSelected ? null : v)
+                    if (!isSelected) setCenter({ lat: v.attributes.latitude, lng: v.attributes.longitude })
+                    if (!isSelected && zoom < 11) setZoom(12)
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12, padding: '9px 18px',
+                    borderBottom: '1px solid var(--border)',
+                    background: isSelected ? `${lc.accent}0e` : 'transparent',
+                    cursor: 'pointer', transition: 'background 0.12s',
+                  }}
+                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--bg-3)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = isSelected ? `${lc.accent}0e` : 'transparent' }}
+                >
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: lc.accent, flexShrink: 0, boxShadow: `0 0 6px ${lc.accent}` }} />
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 600, color: isSelected ? lc.accent : 'var(--text)', minWidth: 52 }}>Train {label}</span>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.04em', flex: 1, textTransform: 'capitalize' }}>
                     {status.toLowerCase()}
                   </span>
                   {speed != null && (
-                    <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
+                    <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.04em', flexShrink: 0 }}>
                       {Math.round(speed)} km/h
                     </span>
                   )}
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-dim)', flexShrink: 0 }}>→</span>
                 </div>
               )
             })}
