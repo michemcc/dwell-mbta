@@ -8,7 +8,7 @@ import NextTrain from './components/NextTrain'
 import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.4.0'
+const VERSION = '2026.4.1'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────
@@ -80,12 +80,12 @@ function QuickSearch({ onCommit, autoFocus }) {
           ref={inputRef}
           value={query}
           onChange={e => { setQuery(e.target.value); setOpen(true) }}
-          placeholder="Type any stop name — Park Street, Salem, Downtown Crossing…"
+          placeholder="Search any stop…"
           style={{
             width: '100%', background: 'var(--bg-3)',
             border: '1px solid var(--border)', borderLeft: '3px solid var(--accent)',
             borderRadius: 'var(--radius-md)', color: 'var(--text)',
-            fontFamily: 'var(--mono)', fontSize: 14, padding: '14px 44px 14px 34px',
+            fontFamily: 'var(--mono)', fontSize: 16, padding: '14px 44px 14px 34px',
             letterSpacing: '0.03em', outline: 'none',
             transition: 'border-color 0.16s, box-shadow 0.16s',
             boxShadow: 'none',

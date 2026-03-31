@@ -51,7 +51,7 @@ function CRTrainModal({ route, onClose }) {
       x: dims.w / 2 + (px - cx) * TILE,
       y: (dims.h || 400) / 2 + (py - cy) * TILE,
     }
-  }, [center, zoom, dims.w, MODAL_H])
+  }, [center, zoom, dims.w, dims.h])
 
   // Convert pixel offset from center back to lat/lng
   const pixelToLatLng = useCallback((px, py) => {
@@ -62,7 +62,7 @@ function CRTrainModal({ route, onClose }) {
     const lng = tileX / n * 360 - 180
     const latR = Math.atan(Math.sinh(Math.PI * (1 - 2 * tileY / n)))
     return { lat: latR * 180 / Math.PI, lng }
-  }, [center, zoom, dims.w, MODAL_H])
+  }, [center, zoom, dims.w, dims.h])
 
   // ── Tile grid ───────────────────────────────────────────────────────────────
   const centerTileX = Math.floor(lngToTileX(center.lng))
