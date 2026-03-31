@@ -198,18 +198,26 @@ function CRTrainModal({ route, onClose }) {
   // Close selected vehicle when clicking backdrop
   const handleBackdrop = (e) => { if (e.target === e.currentTarget) onClose() }
 
+  const isMobileLayout = typeof window !== 'undefined' && window.innerWidth < 768
+
   return (
     <div onClick={handleBackdrop} style={{
       position: 'fixed', inset: 0, zIndex: 800,
-      background: 'rgba(5,6,10,0.9)', backdropFilter: 'blur(6px)',
-      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-      padding: '0 0 env(safe-area-inset-bottom)',
+      background: 'rgba(5,6,10,0.88)', backdropFilter: 'blur(8px)',
+      display: 'flex',
+      alignItems: isMobileLayout ? 'flex-end' : 'center',
+      justifyContent: 'center',
+      padding: isMobileLayout ? '0 0 env(safe-area-inset-bottom)' : '20px',
     }}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '100%', maxWidth: 860,
-        background: 'var(--bg-2)', borderRadius: '16px 16px 0 0',
-        border: '1px solid var(--border)', borderBottom: 'none',
+        maxHeight: isMobileLayout ? '92vh' : '90vh',
+        display: 'flex', flexDirection: 'column',
+        background: 'var(--bg-2)',
+        borderRadius: isMobileLayout ? '16px 16px 0 0' : '16px',
+        border: '1px solid var(--border)',
         overflow: 'hidden', animation: 'fadeUp 0.22s ease both',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.7)',
       }}>
 
         {/* ── Header ── */}
@@ -222,8 +230,11 @@ function CRTrainModal({ route, onClose }) {
             <div style={{ fontFamily: 'var(--display)', fontSize: 15, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.01em' }}>
               {route?.attributes?.long_name || route?.id}
             </div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', marginTop: 1 }}>
-              {loading ? 'Loading…' : `${activeVehicles.length} active train${activeVehicles.length !== 1 ? 's' : ''} · pinch or scroll to zoom · drag to pan`}
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.07em', marginTop: 1 }}>
+              {loading
+                ? 'Loading trains…'
+                : `${activeVehicles.length} train${activeVehicles.length !== 1 ? 's' : ''} on this route · scroll/pinch to zoom · drag to pan`
+              }
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
@@ -249,7 +260,7 @@ function CRTrainModal({ route, onClose }) {
         {/* ── Map ── */}
         <div
           ref={containerRef}
-          style={{ position: 'relative', width: '100%', height: MODAL_H, background: '#0a0c10', overflow: 'hidden', cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none' }}
+          style={{ position: 'relative', width: '100%', flex: 1, minHeight: 280, background: '#0a0c10', overflow: 'hidden', cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none' }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
@@ -391,10 +402,17 @@ function CRTrainModal({ route, onClose }) {
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: lc.accent, flexShrink: 0 }} />
                   <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: lc.accent }}>Train {label}</span>
                 </div>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.8, textTransform: 'capitalize' }}>
-                  <div>{status}</div>
-                  {speed && <div>Speed: {speed}</div>}
-                  {bearing && <div>Heading: {bearing}</div>}
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.9 }}>
+                  <div style={{ textTransform: 'capitalize' }}>{status}</div>
+                  {sv._stopName && (
+                    <div style={{ color: 'var(--text)' }}>
+                      {sv.attributes?.current_status === 'IN_TRANSIT_TO' ? '→ ' : '@ '}
+                      {sv._stopName}
+                    </div>
+                  )}
+                  {sv._headsign && <div style={{ color: 'var(--text-dim)' }}>Toward {sv._headsign}</div>}
+                  {speed && <div>{speed}</div>}
+                  {bearing && <div>Hdg {bearing}</div>}
                 </div>
               </div>
             )
@@ -488,15 +506,22 @@ function CRTrainModal({ route, onClose }) {
                 >
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: lc.accent, flexShrink: 0, boxShadow: `0 0 6px ${lc.accent}` }} />
                   <span style={{ fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 600, color: isSelected ? lc.accent : 'var(--text)', minWidth: 52 }}>Train {label}</span>
-                  <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.04em', flex: 1, textTransform: 'capitalize' }}>
-                    {status.toLowerCase()}
-                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'capitalize' }}>
+                      {status.toLowerCase()}
+                      {v._stopName ? ` · ${status === 'IN_TRANSIT_TO' ? '→ ' : '@ '}${v._stopName}` : ''}
+                    </div>
+                    {v._headsign && (
+                      <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-dim)', letterSpacing: '0.04em', marginTop: 1 }}>
+                        Toward {v._headsign}
+                      </div>
+                    )}
+                  </div>
                   {speed != null && (
                     <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.04em', flexShrink: 0 }}>
                       {Math.round(speed)} km/h
                     </span>
                   )}
-                  <span style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--text-dim)', flexShrink: 0 }}>→</span>
                 </div>
               )
             })}

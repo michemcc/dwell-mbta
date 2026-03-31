@@ -323,6 +323,10 @@ export function useRoutesForStop(stopId) {
 }
 
 // ── useVehicles ───────────────────────────────────────────────────────────────
+// Fetches live vehicles with stop and trip included so we can show:
+// - next stop name (from included stop when status = IN_TRANSIT_TO)
+// - current stop name (when status = STOPPED_AT)
+// - trip headsign (the final destination of this run)
 export function useVehicles(routeId, intervalMs = 15000) {
   const [vehicles, setVehicles] = useState([])
   const [loading, setLoading]   = useState(false)
@@ -330,8 +334,27 @@ export function useVehicles(routeId, intervalMs = 15000) {
   const doFetch = useCallback(() => {
     if (!routeId) return
     setLoading(true)
-    mbtaFetch(`/vehicles?filter[route]=${routeId}&include=stop&page[limit]=50`)
-      .then(d => setVehicles(d.data || []))
+    mbtaFetch(`/vehicles?filter[route]=${routeId}&include=stop,trip&page[limit]=50`)
+      .then(d => {
+        // Build lookup maps from included data
+        const stopNames = {}
+        const tripHeadsigns = {}
+        ;(d.included || []).forEach(inc => {
+          if (inc.type === 'stop') stopNames[inc.id] = inc.attributes?.name || inc.id
+          if (inc.type === 'trip') tripHeadsigns[inc.id] = inc.attributes?.headsign || ''
+        })
+        // Annotate each vehicle with resolved names
+        const annotated = (d.data || []).map(v => {
+          const stopId  = v.relationships?.stop?.data?.id
+          const tripId  = v.relationships?.trip?.data?.id
+          return {
+            ...v,
+            _stopName:  stopId  ? (stopNames[stopId]      || stopId) : null,
+            _headsign:  tripId  ? (tripHeadsigns[tripId]  || '')     : '',
+          }
+        })
+        setVehicles(annotated)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [routeId])
