@@ -209,14 +209,14 @@ function CRTrainModal({ route, onClose }) {
       // Desktop: centered dialog taking up most of the viewport
       alignItems: isMobileLayout ? 'flex-end' : 'center',
       justifyContent: 'center',
-      padding: isMobileLayout ? '0' : '16px',
+      padding: isMobileLayout ? '0' : '24px 16px',
     }}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '100%',
         maxWidth: isMobileLayout ? '100%' : '900px',
         // Mobile: 90% of screen height so map is large and comfortable
         // Desktop: nearly full viewport height
-        height: isMobileLayout ? '90vh' : '94vh',
+        height: isMobileLayout ? '90vh' : 'min(88vh, 800px)',
         display: 'flex', flexDirection: 'column',
         background: 'var(--bg-2)',
         borderRadius: isMobileLayout ? '20px 20px 0 0' : '16px',
@@ -356,27 +356,28 @@ function CRTrainModal({ route, onClose }) {
                     position: 'relative', overflow: 'visible',
                   }}
                 >
-                  {/* Direction arrow — bold SVG chevron, rotates around marker centre */}
+                  {/* Direction arrow — SVG outside the marker circle, clearly visible */}
                   {bearing != null && (
                     <svg
-                      width="32" height="32"
-                      viewBox="0 0 32 32"
+                      width="56" height="56"
+                      viewBox="0 0 56 56"
                       style={{
                         position: 'absolute',
                         top: '50%', left: '50%',
-                        marginTop: -16, marginLeft: -16,
+                        marginTop: -28, marginLeft: -28,
                         transform: `rotate(${bearing}deg)`,
                         pointerEvents: 'none',
                         overflow: 'visible',
-                        filter: `drop-shadow(0 0 4px ${lc.accent})`,
-                        opacity: isMoving ? 1 : 0.45,
+                        zIndex: 10,
+                        filter: `drop-shadow(0 0 5px ${lc.accent})`,
+                        opacity: isMoving ? 1 : 0.5,
                       }}
                     >
-                      {/* Arrow head pointing UP (north = 0°), centred on 16,16 */}
-                      {/* Stem from centre, head at top — clearly outside the marker circle */}
-                      <line x1="16" y1="16" x2="16" y2="2"
-                        stroke={lc.accent} strokeWidth="2.5" strokeLinecap="round" />
-                      <polygon points="16,0 11,8 21,8"
+                      {/* Stem: from just outside the marker (y=20) to near top (y=6) */}
+                      <line x1="28" y1="20" x2="28" y2="8"
+                        stroke={lc.accent} strokeWidth="3" strokeLinecap="round" />
+                      {/* Arrowhead: solid filled triangle at the tip */}
+                      <polygon points="28,2 22,12 34,12"
                         fill={lc.accent} />
                     </svg>
                   )}
