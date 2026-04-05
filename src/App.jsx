@@ -8,7 +8,7 @@ import NextTrain from './components/NextTrain'
 import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.4.2'
+const VERSION = '2026.4.3'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────
@@ -178,12 +178,20 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
       {/* Wordmark */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0, marginBottom: 6 }}>
-          <h1 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 'clamp(48px,10vw,76px)', letterSpacing: '-0.05em', color: 'var(--text)', lineHeight: 1, margin: 0 }}>
-            DWELL
-          </h1>
+          <h1
+            className="glow-text"
+            style={{
+              fontFamily: 'var(--display)', fontWeight: 900,
+              fontSize: 'clamp(42px,9vw,72px)', letterSpacing: '0.06em',
+              color: 'var(--accent)', lineHeight: 1, margin: 0,
+              cursor: 'default',
+            }}
+            onMouseEnter={e => e.currentTarget.style.animation = 'glitch 0.6s steps(1) forwards'}
+            onMouseLeave={e => e.currentTarget.style.animation = 'none'}
+          >DWELL</h1>
           <span style={{ width: 11, height: 11, borderRadius: '50%', background: 'var(--accent)', marginBottom: 12, marginLeft: 7, flexShrink: 0, boxShadow: '0 0 20px var(--accent)' }} />
         </div>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-muted)', letterSpacing: '0.18em', marginBottom: 16 }}>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--cyan)', letterSpacing: '0.22em', marginBottom: 16, opacity: 0.8 }}>
           GREATER BOSTON TRANSIT INTELLIGENCE
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -440,7 +448,7 @@ function Header({ onLogoClick, theme, onThemeToggle }) {
           onMouseEnter={e => e.currentTarget.style.opacity = '0.72'}
           onMouseLeave={e => e.currentTarget.style.opacity = '1'}
         >
-          <span style={{ fontFamily: 'var(--display)', fontSize: 22, fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text)' }}>DWELL</span>
+          <span style={{ fontFamily: 'var(--display)', fontSize: 20, fontWeight: 800, letterSpacing: '0.08em', color: 'var(--accent)' }}>DWELL</span>
           <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.18em', color: 'var(--accent-dim)', padding: '2px 6px', border: '1px solid var(--accent-dim)', borderRadius: 2, lineHeight: 1 }}>MBTA</span>
         </button>
 
@@ -642,10 +650,12 @@ export default function App() {
           pointerEvents: 'none', zIndex: 0,
         }} />
       )}
-      {/* Top accent stripe */}
+      {/* Top accent stripe — animated data stream */}
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0, height: 2, zIndex: 999,
-        background: 'linear-gradient(90deg, var(--accent) 0%, rgba(59,130,246,0.7) 50%, rgba(168,85,247,0.5) 100%)',
+        background: 'linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--cyan) 60%, var(--green) 85%, transparent 100%)',
+        backgroundSize: '200% 100%',
+        animation: 'data-stream 2.5s linear infinite',
       }} />
       <Header onLogoClick={() => navigate('landing')} theme={theme} onThemeToggle={toggleTheme} />
       <main style={{

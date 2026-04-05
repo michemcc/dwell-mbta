@@ -937,7 +937,7 @@ function LiveCountdown({ isoTime, large }) {
       fontFamily: 'var(--mono)', fontWeight: urgent || soon ? 800 : 600,
       fontSize, color,
       letterSpacing: urgent ? '0.01em' : '0.03em',
-      textShadow: urgent ? `0 0 16px ${color}55` : 'none',
+      textShadow: urgent ? `0 0 14px ${color}, 0 0 30px ${color}55` : soon ? `0 0 8px ${color}44` : 'none',
       transition: 'color 0.35s, font-size 0.2s',
       whiteSpace: 'nowrap',
       lineHeight: 1,
@@ -997,7 +997,7 @@ function DestinationGroup({ group, accent, groupIndex }) {
       {/* ── Section header ── */}
       <div style={{
         padding: '13px 20px 10px', background: 'var(--bg-3)',
-        borderLeft: `3px solid ${accent}`,
+        borderLeft: `3px solid ${accent}`, boxShadow: `-4px 0 16px ${accent}44`,
       }}>
         {/* Row 1: dot + name + (countdown or NEXT label) */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: isBranched ? 8 : 6 }}>

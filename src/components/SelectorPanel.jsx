@@ -249,16 +249,18 @@ export default function SelectorPanel({ onCommit }) {
                   animationDelay: `${i*0.05}s`,
                   display: 'flex', flexDirection: 'column', gap: 8, padding: '18px 20px',
                   cursor: 'pointer', background: 'var(--bg-3)',
-                  border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)',
+                  clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%)',
                   textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.18s',
                   position: 'relative', overflow: 'hidden',
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.borderColor = 'var(--accent)'
-                  e.currentTarget.style.background = 'rgba(240,204,74,0.07)'
+                  e.currentTarget.style.background = 'rgba(245,206,62,0.07)'
                   e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 6px 24px rgba(240,204,74,0.12)'
-                  e.currentTarget.querySelector('.mode-label').style.color = 'var(--text)'
+                  e.currentTarget.style.boxShadow = '0 0 24px rgba(245,206,62,0.15), 0 6px 20px rgba(0,0,0,0.4)'
+                  e.currentTarget.querySelector('.mode-label').style.color = 'var(--accent)'
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.borderColor = 'var(--border)'

@@ -1,71 +1,84 @@
-/* ── DWELL Global Styles v2026.2.9 ──────────────────────────────── */
+/* ── DWELL Global Styles — HUD Edition ──────────────────────────── */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Dark theme ──────────────────────────────────────────────────── */
+/* ── Dark theme — ops-center HUD ────────────────────────────────── */
 :root, [data-theme="dark"] {
-  --bg:          #05060A;
-  --bg-2:        #090C12;
-  --bg-3:        #0E1118;
-  --bg-4:        #14171F;
+  --bg:          #03040A;
+  --bg-2:        #07091080;
+  --bg-3:        #0C0F1A;
+  --bg-4:        #121622;
 
-  --text:        #F4F5F7;        /* near-white, high contrast */
-  --text-muted:  #B8BFCF;        /* clearly readable secondary text */
-  --text-dim:    #7A8090;        /* visible labels and metadata */
+  --text:        #E8ECF5;
+  --text-muted:  #8B96B8;
+  --text-dim:    #485070;
 
-  --accent:      #F2CA45;
-  --accent-dim:  #886F1E;
-  --accent-text: #05060A;
+  /* Primary accent — electric amber */
+  --accent:      #F5CE3E;
+  --accent-dim:  #7A6318;
+  --accent-text: #03040A;
 
-  --green:       #3FCF84;
-  --red:         #F05555;
-  --orange:      #F09040;
+  /* Secondary accent — cyan highlight for HUD feel */
+  --cyan:        #3ECFF5;
+  --cyan-dim:    #1A5A6E;
 
-  --border:      rgba(255,255,255,0.08);
-  --border-mid:  rgba(255,255,255,0.14);
-  --shadow:      rgba(0,0,0,0.75);
-  --scanline:    rgba(0,0,0,0.016);
+  --green:       #39E085;
+  --red:         #F04A4A;
+  --orange:      #F08C35;
 
-  /* Nav bar — distinct surface with clear text */
-  --nav-bg:      rgba(5,6,10,0.96);
-  --nav-text:    #B0B6C4;
+  --border:      rgba(245,206,62,0.08);
+  --border-mid:  rgba(245,206,62,0.18);
+  --shadow:      rgba(0,0,0,0.85);
+  --scanline:    rgba(0,0,0,0.032);
+
+  --nav-bg:      rgba(3,4,10,0.97);
+  --nav-text:    #6878A0;
+
+  /* Glow values */
+  --glow-accent: 0 0 18px rgba(245,206,62,0.35);
+  --glow-cyan:   0 0 18px rgba(62,207,245,0.35);
 }
 
 /* ── Light theme ─────────────────────────────────────────────────── */
 [data-theme="light"] {
-  --bg:          #F6F5F0;
-  --bg-2:        #EEECEA;
-  --bg-3:        #E6E4E0;
-  --bg-4:        #D9D7D2;
-  --text:        #111114;        /* deeper black for max contrast */
-  --text-muted:  #44464E;        /* clearly readable, not washed out */
-  --text-dim:    #7E8090;        /* visible but clearly secondary */
-  --accent:      #AA8500;
-  --accent-dim:  #6E5700;
+  --bg:          #F2F1EC;
+  --bg-2:        #E9E8E2;
+  --bg-3:        #E0DED8;
+  --bg-4:        #D4D2CB;
+  --text:        #0E0F14;
+  --text-muted:  #3A3C48;
+  --text-dim:    #7A7C8A;
+  --accent:      #9A7500;
+  --accent-dim:  #5E4700;
   --accent-text: #FFFFFF;
-  --green:       #1A8A50;
-  --red:         #C42828;
-  --orange:      #C06018;
-  --border:      rgba(0,0,0,0.09);
+  --cyan:        #006E8A;
+  --cyan-dim:    #003D4D;
+  --green:       #167842;
+  --red:         #B82222;
+  --orange:      #A85010;
+  --border:      rgba(0,0,0,0.10);
   --border-mid:  rgba(0,0,0,0.18);
-  --shadow:      rgba(0,0,0,0.12);
+  --shadow:      rgba(0,0,0,0.14);
   --scanline:    transparent;
-
-  /* Nav bar — solid light surface with high-contrast text */
-  --nav-bg:      rgba(230,228,222,0.97);
-  --nav-text:    #2C2D33;
+  --nav-bg:      rgba(220,218,210,0.98);
+  --nav-text:    #28293A;
+  --glow-accent: none;
+  --glow-cyan:   none;
 }
 
-/* ── Tokens ───────────────────────────────────────────────────────── */
+/* ── Typography ──────────────────────────────────────────────────── */
 :root {
-  --mono:        'IBM Plex Mono', 'Fira Code', monospace;
+  --mono:        'IBM Plex Mono', 'Courier New', monospace;
   --sans:        'IBM Plex Sans', system-ui, sans-serif;
-  --display:     'Syne', sans-serif;
-  --radius-sm:   6px;
-  --radius-md:   12px;
-  --radius-lg:   16px;
-  --transition:  150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --display:     'Orbitron', 'Syne', sans-serif;   /* HUD/game display font */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --transition:  140ms cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ── Load Orbitron from Google Fonts ─────────────────────────────── */
+/* (Added in index.html as well for critical path) */
 
 /* ── Base ─────────────────────────────────────────────────────────── */
 html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
@@ -80,38 +93,33 @@ body {
   line-height: 1.5;
 }
 
-/* ── Ambient orbs (dark mode) ─────────────────────────────────────── */
+/* ── HUD grid background (dark mode only) ────────────────────────── */
 [data-theme="dark"] body::before {
   content: '';
   position: fixed; inset: 0;
   pointer-events: none; z-index: 0;
+  /* Subtle dot grid */
+  background-image:
+    radial-gradient(circle, rgba(245,206,62,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+}
+
+/* Ambient color orbs layered on top of the grid */
+[data-theme="dark"] body::after {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
   background:
-    radial-gradient(ellipse 55vw 38vh at 18% 12%, rgba(242,202,69,0.042) 0%, transparent 70%),
-    radial-gradient(ellipse 45vw 32vh at 82% 82%, rgba(59,130,246,0.036) 0%, transparent 70%),
-    radial-gradient(ellipse 38vw 28vh at 62% 38%, rgba(168,85,247,0.022) 0%, transparent 70%);
-  animation: orb-drift 20s ease-in-out infinite alternate;
+    radial-gradient(ellipse 60vw 40vh at 15% 10%, rgba(245,206,62,0.05) 0%, transparent 65%),
+    radial-gradient(ellipse 50vw 35vh at 85% 85%, rgba(62,207,245,0.04) 0%, transparent 65%),
+    radial-gradient(ellipse 40vw 30vh at 65% 40%, rgba(57,224,133,0.025) 0%, transparent 65%);
+  animation: orb-drift 22s ease-in-out infinite alternate;
 }
 
-@keyframes orb-drift {
-  0%   { opacity:1;   transform:scale(1)    translate(0,0); }
-  40%  { opacity:.85; transform:scale(1.03) translate(.8%,.8%); }
-  70%  { opacity:.92; transform:scale(.98)  translate(-.8%,.4%); }
-  100% { opacity:1;   transform:scale(1.01) translate(.4%,-.4%); }
-}
-
-main, header, nav, footer { position: relative; z-index: 1; }
-
-/* ── Scrollbars ───────────────────────────────────────────────────── */
-::-webkit-scrollbar       { width: 3px; height: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
-
-/* ── Focus ────────────────────────────────────────────────────────── */
-:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
-
-/* ── Scanlines ────────────────────────────────────────────────────── */
-body::after {
+/* Scanlines on html::after — separate from body::after orbs above */
+html::after {
   content: '';
   position: fixed; inset: 0;
   background: repeating-linear-gradient(
@@ -121,20 +129,72 @@ body::after {
   pointer-events: none; z-index: 9999;
 }
 
+@keyframes orb-drift {
+  0%   { opacity:1;   transform:scale(1)    translate(0,0); }
+  40%  { opacity:.85; transform:scale(1.04) translate(.8%,.6%); }
+  70%  { opacity:.92; transform:scale(.97)  translate(-.6%,.3%); }
+  100% { opacity:1;   transform:scale(1.02) translate(.3%,-.4%); }
+}
+
+main, header, nav, footer { position: relative; z-index: 1; }
+
+/* ── Scrollbars ───────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ── Focus ────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+  box-shadow: var(--glow-accent);
+}
+
 /* ── Animations ───────────────────────────────────────────────────── */
-@keyframes fadeUp    { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-@keyframes fadeIn    { from { opacity:0; } to { opacity:1; } }
-@keyframes blink     { 0%,100% { opacity:1; } 50% { opacity:0; } }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+@keyframes blink   { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
 @keyframes pulse-dot {
   0%   { transform:scale(1);   opacity:.85; }
-  70%  { transform:scale(2.4); opacity:0; }
-  100% { transform:scale(2.4); opacity:0; }
+  70%  { transform:scale(2.6); opacity:0; }
+  100% { transform:scale(2.6); opacity:0; }
 }
+
 @keyframes shimmer {
   from { background-position: -200% 0; }
   to   { background-position:  200% 0; }
 }
 @keyframes spin { to { transform:rotate(360deg); } }
+
+/* HUD data-stream — accent line animation */
+@keyframes data-stream {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Glitch effect — subtle, used on the wordmark hover */
+@keyframes glitch {
+  0%, 92%, 100% { transform: none; clip-path: none; }
+  93%  { transform: translate(-2px, 0); clip-path: inset(10% 0 85% 0); }
+  94%  { transform: translate(2px, 0);  clip-path: inset(60% 0 25% 0); }
+  95%  { transform: none; }
+  96%  { transform: translate(-1px, 1px); clip-path: inset(40% 0 45% 0); }
+  97%  { transform: none; }
+}
+
+/* Corner-cut utility — clip-path for that HUD card feel */
+.hud-cut {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+.hud-cut-lg {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+}
 
 .anim-fade-up { animation: fadeUp 0.26s ease both; }
 .anim-fade-in { animation: fadeIn 0.18s ease both; }
@@ -149,27 +209,27 @@ body::after {
 
 /* ── Glass surfaces ───────────────────────────────────────────────── */
 [data-theme="dark"] .glass {
-  background: rgba(9,12,18,0.78);
-  backdrop-filter: blur(20px) saturate(1.3);
-  -webkit-backdrop-filter: blur(20px) saturate(1.3);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(7,9,16,0.82);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid rgba(245,206,62,0.1);
 }
 [data-theme="light"] .glass {
-  background: rgba(246,245,240,0.84);
-  backdrop-filter: blur(16px) saturate(1.1);
-  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  background: rgba(242,241,236,0.84);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(0,0,0,0.09);
 }
 
-/* Arrivals table — glass treatment */
 [data-theme="dark"] .glass-card {
-  background: rgba(9,12,18,0.72);
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(7,9,16,0.75);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  border: 1px solid rgba(245,206,62,0.1);
+  box-shadow: inset 0 1px 0 rgba(245,206,62,0.06);
 }
 [data-theme="light"] .glass-card {
-  background: rgba(246,245,240,0.80);
+  background: rgba(242,241,236,0.80);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(0,0,0,0.09);
@@ -182,19 +242,27 @@ body::after {
 /* ── Inputs & textareas ───────────────────────────────────────────── */
 input::placeholder, textarea::placeholder { color: var(--text-dim); }
 
-/* ── Prevent iOS Safari auto-zoom on input focus ─────────────────────────── */
-/* Any input with font-size < 16px triggers zoom on iOS. This ensures all     */
-/* inputs use at least 16px on touch devices, then scales the visual size      */
-/* back down with transform so the design is preserved.                         */
+/* ── Prevent iOS Safari auto-zoom on input focus ─────────────────── */
 @media (max-width: 768px) {
-  input, textarea, select {
-    font-size: 16px !important;
-  }
+  input, textarea, select { font-size: 16px !important; }
 }
 
-/* ── Utility ──────────────────────────────────────────────────────── */
+/* ── HUD accent rule ──────────────────────────────────────────────── */
 .accent-rule {
   height: 1px;
-  background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+  background: linear-gradient(90deg,
+    var(--accent) 0%,
+    var(--cyan) 50%,
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: data-stream 3s linear infinite;
   border: none; margin: 0;
+}
+
+/* ── Glow text utility ────────────────────────────────────────────── */
+[data-theme="dark"] .glow-text {
+  text-shadow: 0 0 20px rgba(245,206,62,0.5), 0 0 40px rgba(245,206,62,0.2);
+}
+[data-theme="dark"] .glow-text-cyan {
+  text-shadow: 0 0 20px rgba(62,207,245,0.5), 0 0 40px rgba(62,207,245,0.2);
 }
