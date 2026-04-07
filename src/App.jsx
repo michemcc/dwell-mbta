@@ -6,9 +6,10 @@ import FavoritesPanel from './components/FavoritesPanel'
 import ArrivalsBoard from './components/ArrivalsBoard'
 import NextTrain from './components/NextTrain'
 import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
+import GuidesPage from './components/GuidesPage'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.4.3'
+const VERSION = '2026.4.4'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────
@@ -299,10 +300,11 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
 // ── Bottom Nav ────────────────────────────────────────────────────────────────
 // "Pulse" replaced with "Plan" (Next Train Finder)
 const NAV_ITEMS = [
-  { id: 'landing', icon: '⌂', label: 'Home'  },
-  { id: 'saved',   icon: '★', label: 'Saved' },
-  { id: 'plan',    icon: '→', label: 'Plan'  },
-  { id: 'about',   icon: '◉', label: 'About' },
+  { id: 'landing', icon: '⌂', label: 'Home'   },
+  { id: 'saved',   icon: '★', label: 'Saved'  },
+  { id: 'plan',    icon: '→', label: 'Plan'   },
+  { id: 'guides',  icon: '⊞', label: 'Guides' },
+  { id: 'about',   icon: '◉', label: 'About'  },
 ]
 
 function useIsMobile() {
@@ -321,7 +323,8 @@ function BottomNav({ page, onNavigate }) {
   const isActive = (id) =>
     page === id ||
     (id === 'landing' && page === 'arrivals') ||
-    (id === 'about'   && (page === 'feedback' || page === 'privacy'))
+    (id === 'about'   && (page === 'feedback' || page === 'privacy')) ||
+          (id === 'guides'  && page === 'guides')
 
   // Mobile: fixed bottom tab bar
   if (isMobile) {
@@ -526,6 +529,7 @@ export default function App() {
     arrivals: '/',    // arrivals is dynamic — stays at /
     saved:    '/saved',
     plan:     '/plan',
+    guides:   '/guides',
     about:    '/about',
     feedback: '/feedback',
     privacy:  '/privacy',
@@ -534,6 +538,7 @@ export default function App() {
     '/':         'landing',
     '/saved':    'saved',
     '/plan':     'plan',
+    '/guides':   'guides',
     '/about':    'about',
     '/feedback': 'feedback',
     '/privacy':  'privacy',
@@ -622,6 +627,7 @@ export default function App() {
           </div>
         )
 
+      case 'guides':   return <GuidesPage />
       case 'about':    return <AboutPage onNavigate={navigate} />
       case 'feedback': return <FeedbackPage onNavigate={navigate} />
       case 'privacy':  return <PrivacyPage onNavigate={navigate} />
