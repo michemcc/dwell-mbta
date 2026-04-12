@@ -12,6 +12,8 @@ function SectionNav({ current, onNavigate }) {
     { id: 'about',    label: 'About'    },
     { id: 'feedback', label: 'Feedback' },
     { id: 'privacy',  label: 'Privacy'  },
+    { id: 'terms',    label: 'Terms'    },
+    { id: 'cookies',  label: 'Cookies'  },
   ]
   return (
     <div style={{
@@ -113,6 +115,23 @@ export function AboutPage({ onNavigate }) {
         DWELL is not affiliated with or endorsed by the MBTA. It is an independent open-source
         project built for Boston commuters. If you find it useful,{' '}
         <A href="https://buymeacoffee.com/michemcc">buying a coffee</A> helps keep it running.
+      </P>
+      <H>Advertising</H>
+      <P>
+        DWELL is free to use and supported by advertising through Google AdSense.
+        Ads are selected and served by Google and are clearly distinguished from content.
+        DWELL does not endorse any advertised products. Revenue from ads covers server and
+        domain costs. For more, see the{' '}
+        <button onClick={() => onNavigate('terms')}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            color: 'var(--accent)', borderBottom: '1px solid var(--accent-dim)',
+            fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit' }}
+        >Terms of Service</button>{' '}and{' '}
+        <button onClick={() => onNavigate('cookies')}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            color: 'var(--accent)', borderBottom: '1px solid var(--accent-dim)',
+            fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit' }}
+        >Cookie Policy</button>.
       </P>
       <H>Contact</H>
       <P>
@@ -309,6 +328,144 @@ export function PrivacyPage({ onNavigate }) {
         <A href="https://www.mbta.com/">Massachusetts Bay Transportation Authority (MBTA)</A>.
         DWELL is an independent project and is not affiliated with or endorsed by the MBTA.
         Prediction accuracy depends on real-time vehicle reporting and may vary.
+      </P>
+    </PageShell>
+  )
+}
+
+// ── Terms of Service ──────────────────────────────────────────────────────────
+export function TermsPage({ onNavigate }) {
+  return (
+    <PageShell title="Terms of Service" label={`Effective January 1, 2025`} current="terms" onNavigate={onNavigate}>
+      <P>
+        By using DWELL at dwellmbta.com, you agree to these terms. Please read them carefully.
+        If you do not agree, do not use the site.
+      </P>
+      <H>Use of the Service</H>
+      <P>
+        DWELL provides real-time MBTA transit information as a convenience. The service is provided
+        free of charge and on an "as is" basis. You may use DWELL for personal, non-commercial
+        purposes. You may not scrape, copy, redistribute, or build competing products using DWELL's
+        interface or data presentation without written permission.
+      </P>
+      <H>Accuracy of Information</H>
+      <P>
+        All transit data is sourced from the MBTA v3 public API. DWELL makes no guarantee that
+        arrival times, service alerts, or vehicle positions are accurate, complete, or current.
+        Do not rely solely on DWELL for time-sensitive travel decisions. Always verify critical
+        journey information through official MBTA channels.
+      </P>
+      <P>
+        DWELL is not affiliated with, endorsed by, or officially connected to the Massachusetts
+        Bay Transportation Authority (MBTA). The MBTA name, logo, and line colors are the property
+        of the MBTA and are referenced here solely for informational purposes.
+      </P>
+      <H>Advertising</H>
+      <P>
+        DWELL displays advertisements served by Google AdSense. These ads are selected and delivered
+        by Google based on your browsing activity and other signals. DWELL does not control which
+        specific ads are shown. Revenue from advertising helps cover the costs of running the service.
+      </P>
+      <P>
+        DWELL does not endorse any products or services advertised on the site. Clicking an
+        advertisement takes you to a third-party site governed by that site's own terms and
+        privacy policy.
+      </P>
+      <H>Limitation of Liability</H>
+      <P>
+        To the maximum extent permitted by applicable law, DWELL and its developer shall not be
+        liable for any direct, indirect, incidental, or consequential damages arising from your
+        use of the service, including missed transportation, incorrect journey information, or
+        reliance on displayed predictions.
+      </P>
+      <H>Intellectual Property</H>
+      <P>
+        The DWELL name, design system, and original code are the property of the developer.
+        The underlying transit data is owned by the MBTA and made available under the MBTA's
+        public data license. Map tiles are provided by OpenStreetMap contributors under the
+        Open Database License.
+      </P>
+      <H>Changes to These Terms</H>
+      <P>
+        These terms may be updated from time to time. Continued use of DWELL after any changes
+        constitutes your acceptance of the revised terms. The effective date at the top of this
+        page reflects the most recent revision.
+      </P>
+      <H>Contact</H>
+      <P>
+        Questions about these terms?{' '}
+        <button onClick={() => onNavigate('feedback')}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            color: 'var(--accent)', borderBottom: '1px solid var(--accent-dim)',
+            fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit' }}
+        >Send us a message</button>.
+      </P>
+    </PageShell>
+  )
+}
+
+// ── Cookie Policy ─────────────────────────────────────────────────────────────
+export function CookiesPage({ onNavigate }) {
+  return (
+    <PageShell title="Cookie Policy" label={`Effective January 1, 2025`} current="cookies" onNavigate={onNavigate}>
+      <P>
+        This Cookie Policy explains how DWELL uses cookies and similar tracking technologies.
+        By continuing to use the site after dismissing the cookie banner, you consent to the
+        use of cookies as described here.
+      </P>
+      <H>What Are Cookies?</H>
+      <P>
+        Cookies are small text files stored in your browser when you visit a website. They are
+        widely used to make websites work, remember your preferences, and provide information
+        to site owners and advertisers.
+      </P>
+      <H>Cookies DWELL Sets</H>
+      <P>
+        DWELL sets one first-party cookie: "dwell_cookie_consent", which stores your cookie
+        preference (accepted or declined) so the banner does not reappear on subsequent visits.
+        This cookie contains no personal information and expires after one year.
+      </P>
+      <P>
+        DWELL also stores data in your browser's local storage (not a cookie, but similar) to
+        save your favourite stops and theme preference. This data never leaves your device and
+        is not accessible to any third party.
+      </P>
+      <H>Google AdSense Cookies</H>
+      <P>
+        DWELL uses Google AdSense to display advertisements. Google AdSense sets cookies to
+        show relevant ads based on your browsing activity on DWELL and other websites. These
+        cookies are set by Google's domains and are governed by Google's Privacy Policy.
+      </P>
+      <P>
+        Google may use the DoubleClick cookie to serve ads and track conversions. You can opt
+        out of personalised advertising by visiting{' '}
+        <A href="https://www.google.com/settings/ads">Google's Ad Settings</A> or by visiting{' '}
+        <A href="http://www.aboutads.info/choices/">aboutads.info</A>.
+      </P>
+      <H>How to Manage Cookies</H>
+      <P>
+        You can control cookies through your browser settings. Most browsers allow you to
+        block or delete cookies entirely. Note that blocking all cookies may affect the
+        functionality of DWELL and many other websites.
+      </P>
+      <P>
+        To opt out of Google Analytics and AdSense cookies specifically, you can install the{' '}
+        <A href="https://tools.google.com/dlpage/gaoptout">Google Analytics opt-out browser add-on</A>.
+      </P>
+      <H>Changes to This Policy</H>
+      <P>
+        This Cookie Policy may be updated as our use of cookies changes. The effective date at
+        the top reflects the most recent revision. Continued use of DWELL constitutes acceptance
+        of the updated policy.
+      </P>
+      <H>Contact</H>
+      <P>
+        Questions about cookies?{' '}
+        <button onClick={() => onNavigate('feedback')}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            color: 'var(--accent)', borderBottom: '1px solid var(--accent-dim)',
+            fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit' }}
+        >Get in touch</button>.
       </P>
     </PageShell>
   )

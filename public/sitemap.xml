@@ -62,4 +62,17 @@
     <priority>0.3</priority>
   </url>
 
+  <url>
+    <loc>https://dwellmbta.com/terms</loc>
+    <lastmod>2026-01-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://dwellmbta.com/cookies</loc>
+    <lastmod>2026-01-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
 </urlset>

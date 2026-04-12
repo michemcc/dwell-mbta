@@ -5,11 +5,12 @@ import SelectorPanel from './components/SelectorPanel'
 import FavoritesPanel from './components/FavoritesPanel'
 import ArrivalsBoard from './components/ArrivalsBoard'
 import NextTrain from './components/NextTrain'
-import { AboutPage, FeedbackPage, PrivacyPage } from './components/StaticPages'
+import { AboutPage, FeedbackPage, PrivacyPage, TermsPage, CookiesPage } from './components/StaticPages'
 import GuidesPage from './components/GuidesPage'
+import CookieBanner from './components/CookieBanner'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.4.4'
+const VERSION = '2026.4.5'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────
@@ -172,7 +173,7 @@ function QuickSearch({ onCommit, autoFocus }) {
 
 // ── LandingPage — tabbed: Search (instant) | Browse (cascade) ────────────────
 function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }) {
-  const [tab, setTab] = useState('search')  // 'search' | 'browse'
+  const [tab, setTab] = useState('browse')  // 'browse' | 'search'
 
   return (
     <div className="anim-fade-in">
@@ -214,7 +215,7 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
         background: 'var(--bg-3)', borderRadius: 'var(--radius-md)',
         padding: 4,
       }}>
-        {[['search', 'Search a stop'], ['browse', 'Browse by line']].map(([id, label]) => (
+        {[['browse', 'Browse by line'], ['search', 'Search a stop']].map(([id, label]) => (
           <button
             key={id}
             onClick={() => setTab(id)}
@@ -270,7 +271,7 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
           display: 'flex', justifyContent: 'center', alignItems: 'center',
           gap: 0, paddingTop: 20, borderTop: '1px solid var(--border)',
         }}>
-          {[['about','About'],['feedback','Feedback'],['privacy','Privacy']].map(([id, label], i) => (
+          {[['about','About'],['feedback','Feedback'],['privacy','Privacy'],['terms','Terms'],['cookies','Cookies']].map(([id, label], i) => (
             <React.Fragment key={id}>
               {i > 0 && <span style={{ width: 1, height: 12, background: 'var(--border-mid)', display: 'inline-block', margin: '0 16px' }} />}
               <button onClick={() => onNavigate(id)} style={{
@@ -533,6 +534,8 @@ export default function App() {
     about:    '/about',
     feedback: '/feedback',
     privacy:  '/privacy',
+    terms:    '/terms',
+    cookies:  '/cookies',
   }
   const PATH_TO_PAGE = {
     '/':         'landing',
@@ -542,6 +545,8 @@ export default function App() {
     '/about':    'about',
     '/feedback': 'feedback',
     '/privacy':  'privacy',
+    '/terms':    'terms',
+    '/cookies':  'cookies',
   }
 
   const navigate = useCallback((id) => {
@@ -631,6 +636,8 @@ export default function App() {
       case 'about':    return <AboutPage onNavigate={navigate} />
       case 'feedback': return <FeedbackPage onNavigate={navigate} />
       case 'privacy':  return <PrivacyPage onNavigate={navigate} />
+      case 'terms':    return <TermsPage onNavigate={navigate} />
+      case 'cookies':  return <CookiesPage onNavigate={navigate} />
 
       default: // landing
         return (
@@ -670,6 +677,7 @@ export default function App() {
       }}>
         {renderPage()}
       </main>
+      <CookieBanner onNavigate={navigate} />
       <BottomNav page={page} onNavigate={navigate} />
     </>
   )
