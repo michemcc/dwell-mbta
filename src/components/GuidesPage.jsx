@@ -1,11 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { MonoLabel } from './Primitives'
 
-// ── Article metadata ──────────────────────────────────────────────────────────
+const SITE_URL = 'https://dwellmbta.com'
+
 const AUTHOR = {
-  name: 'Michael M',
+  name:  'Michael M',
   alias: 'mich',
-  bio: 'Boston transit rider, software developer, and MBTA data nerd. Commuting the Newburyport line since 2019.',
+  bio:   'I have been commuting the Newburyport line into North Station since 2019. I built DWELL because I was tired of opening five different apps just to know if my train was running. These guides are the things I wished someone had told me when I first moved to Boston.',
+  url:   `${SITE_URL}/guides`,
 }
 
 const ARTICLES = [
@@ -13,59 +15,52 @@ const ARTICLES = [
     id:       'mbta-commuter-rail-guide',
     slug:     'mbta-commuter-rail-guide',
     title:    'The Complete MBTA Commuter Rail Guide for 2025',
-    subtitle: 'Every line, every zone, and how to actually use the system',
-    date:     'March 12, 2025',
+    subtitle: 'Every line, every zone, and what I learned the hard way',
+    date:     '2025-03-12',
+    dateDisplay: 'March 12, 2025',
     readMins: 9,
     tags:     ['Commuter Rail', 'Getting Around', 'Beginner'],
-    intro:    "Boston's commuter rail is one of the most underused transit assets in New England. Twelve lines, 145 stations, and service reaching as far as Providence, Needham, and Newburyport. Here is everything you need to know to ride it confidently.",
+    intro:    "I moved to Salem in 2019 and figured out the commuter rail mostly by trial and error. Missed trains, wrong platforms, surprise fares. This is the guide I needed then. Boston's commuter rail is genuinely one of the best ways to get around the region, but the learning curve is steeper than it should be.",
     content: [
       {
-        heading: 'What is the Commuter Rail?',
-        body: `The MBTA Commuter Rail is a network of 12 lines operating out of two downtown terminals: North Station and South Station. Lines departing from North Station serve communities north and west of Boston, including Salem, Reading, Lowell, and Fitchburg. Lines from South Station serve communities to the south and southwest, including Providence, Worcester, Needham, and Stoughton.
+        heading: 'What the Commuter Rail Actually Is',
+        body: `Think of it as a completely separate transit network that happens to be run by the same agency as the T. Twelve lines, 145 stations, stretching from Providence in the south to Newburyport in the north and Fitchburg to the west. Two downtown hubs: North Station for anything north or northwest of the city, and South Station for south and southwest.
 
-Unlike the subway, commuter rail trains run on a fixed published schedule rather than continuously. During peak hours on popular routes you might see trains every 30 minutes; on off-peak hours or less-travelled lines, gaps of 60 to 90 minutes are common. This makes planning essential.`,
+The key thing that tripped me up at first: these trains run on a schedule, not continuously. You cannot just show up and wait three minutes like you would at Park Street. During peak hours on busy lines you might get a train every 30 minutes. On less-traveled routes or off-peak hours, you could be waiting an hour or more. Check the schedule before you leave. DWELL shows live departures for every station.`,
       },
       {
-        heading: 'Zones and Fares',
-        body: `Commuter rail fares are distance-based, divided into zones 1A through 10. Zone 1A covers stops inside the immediate Boston area including Back Bay, Ruggles, Forest Hills, and Hyde Park. Zone 1 begins just outside that ring. The further your destination, the higher your fare.
+        heading: 'Zones and What You Will Pay',
+        body: `Fares are distance-based across zones labeled 1A through 10. Zone 1A is the innermost ring, covering stops like Back Bay, Ruggles, Forest Hills, and Hyde Park, and costs the same $2.40 as a subway ride. Zone 10 out to Providence costs about $12.75 for a single trip.
 
-As of 2025, a Zone 1A single ride is $2.40 (the same as a subway fare). A Zone 10 single ride to Providence runs around $12.75. Monthly passes offer significant savings for regular commuters. You can pay on the train with cash or contactless card, or buy tickets in advance through the MBTA app.
-
-One important note: if you board without a ticket at a staffed station, you may be charged a surcharge by the conductor.`,
+I pay for a monthly pass, which has saved me a lot over buying individual tickets. You can pay on the train with cash, contactless card, or the MBTA app. One thing to know: if you get on at a staffed station without a valid ticket, conductors can charge a surcharge. I have seen this happen to confused tourists more than once. Buy your ticket before boarding if you can.`,
       },
       {
         heading: 'North Station Lines',
-        body: `Fitchburg Line: Runs from North Station through the western suburbs to Fitchburg, stopping at Waltham, Brandeis, Concord, and Ayer along the way. Heavily used by Waltham-area commuters.
+        body: `The Haverhill Line is the one I know best. It heads north through Reading, Lawrence, and Bradford to Haverhill. Reading has good parking and decent frequency during rush hour, which is why so many people commute from there.
 
-Haverhill Line: Heads north through Reading, Lawrence, and Bradford to Haverhill. Reading is a popular suburban stop with good parking. This line is often the one you want if you live north of Boston and work downtown.
+The Newburyport/Rockport Line runs along the North Shore through Salem, Beverly, Gloucester, and ends at either Newburyport or Rockport depending on the train. Salem is always packed, especially in October when the whole city turns into a Halloween destination.
 
-Lowell Line: Serves Woburn, Wilmington, and Lowell. Fast service during peak hours with frequent trains.
+The Lowell Line serves Woburn and Wilmington and connects to the Red Line at Alewife via shuttle bus, which is a useful option a lot of people do not know about.
 
-Newburyport/Rockport Line: Runs along the North Shore through Salem, Beverly, Gloucester, and either Newburyport or Rockport at the end. Salem is the standout stop, heavily used year-round and especially during Halloween season.
-
-Greenbush, Kingston/Plymouth, Middleborough/Lakeville Lines: South Shore lines departing from South Station, serving coastal communities southeast of Boston.`,
+The Fitchburg Line heads west through Waltham and Concord to Fitchburg. Waltham is the busiest stop by a wide margin.`,
       },
       {
         heading: 'South Station Lines',
-        body: `Framingham/Worcester Line: One of the most-used CR lines, running west through Framingham, Natick, and Westborough to Worcester. South Station to Worcester takes around 75 minutes non-stop on express trains.
+        body: `The Framingham/Worcester Line is one of the most heavily used. It runs west through Natick and Framingham to Worcester, and the express trains are genuinely fast at around 75 minutes end to end.
 
-Providence/Stoughton Line: Runs south to Providence, Rhode Island, making it a genuine intercity rail connection. Amtrak trains also use this corridor, so schedules can look complicated. The MBTA fare applies only to MBTA trains.
+The Providence/Stoughton Line is worth calling out because it connects to actual Amtrak service at Providence. MBTA and Amtrak trains share the tracks but have separate fares and ticketing. Make sure you are on the right one.
 
-Franklin/Foxboro Line: Serves the southwestern suburbs and Foxboro, home of Gillette Stadium. Special event trains run for Patriots and Revolution games.
-
-Needham Line: A short branch running from South Station to Needham Heights, useful for Needham residents who work downtown.`,
+The Franklin/Foxboro Line has event trains for Patriots and Revolution games at Gillette Stadium. This is the easiest way to get to a game without dealing with the parking situation.`,
       },
       {
-        heading: 'Tips for First-Time Riders',
-        body: `Buy a CharlieCard and load it with funds. It works on the subway and buses too, and the tap-to-pay experience is faster than fumbling with cash.
+        heading: 'Tips I Learned the Hard Way',
+        body: `Get a CharlieCard. Load it with funds or your monthly pass. It works across the whole system, subway and bus included, and tapping in is much faster than anything else.
 
-Check the real-time departures before you leave. Trains do run late, and knowing 10 minutes in advance can save a wasted trip to the station. DWELL shows live commuter rail departures for every station.
+Sit in a car toward the middle of the train. On short consists, the cars near the ends sometimes do not line up with platform exits at North Station or South Station. I have wasted a few minutes at the wrong end of the platform.
 
-Sit in a car toward the middle of the platform. Train lengths vary, and some shorter trains do not open every door.
+The Quiet Car is typically the first car from the locomotive end. It is enforced by social pressure rather than formal policy, but most people respect it. I always sit there on the way home.
 
-The Quiet Car is typically the first car from the locomotive end. It is enforced by honor system, but most riders respect it.
-
-If you miss your train, check whether a subway or express bus covers your route as a backup. Many commuter rail stations are also served by local MBTA buses.`,
+If you miss your train, do not panic. Check if an express bus or the subway covers part of your route as a fallback. The Orange Line, for example, parallels the commuter rail to some extent on the southern corridor.`,
       },
     ],
   },
@@ -73,56 +68,55 @@ If you miss your train, check whether a subway or express bus covers your route 
   {
     id:       'mbta-transfers-guide',
     slug:     'mbta-transfers-guide',
-    title:    'Mastering MBTA Transfers: Downtown Crossing, North Station and More',
-    subtitle: 'How to connect between lines efficiently without getting lost',
-    date:     'February 28, 2025',
+    title:    'How to Transfer Between MBTA Lines Without Getting Lost',
+    subtitle: 'Downtown Crossing, North Station, and every hub that matters',
+    date:     '2025-02-28',
+    dateDisplay: 'February 28, 2025',
     readMins: 7,
     tags:     ['Transfers', 'Subway', 'Navigation'],
-    intro:    "Knowing where and how to transfer between MBTA lines is the difference between a 15-minute ride and a 40-minute one. Here is a practical breakdown of every major transfer point in the system.",
+    intro:    "The first time I tried to transfer from the Red Line to the Orange Line at Downtown Crossing I came out on the wrong street and walked three blocks in the wrong direction. The MBTA transfer system is actually pretty logical once someone explains it. Here is that explanation.",
     content: [
       {
-        heading: 'Downtown Crossing',
-        body: `Downtown Crossing is the most important transfer hub in the MBTA system. Here you can switch between the Red Line and the Orange Line in a single station without exiting and re-entering.
+        heading: 'Downtown Crossing: The Most Important Hub',
+        body: `Downtown Crossing is where the Red Line and the Orange Line share a station, and it is the most useful transfer point in the whole system. You can switch between both lines without exiting and paying another fare.
 
-The station is underground and covers multiple levels. Red Line platforms are the deepest; Orange Line platforms are one level up. Follow the clearly marked signs for whichever line you need. The Silver Line buses also serve the surface directly above the station.
+The Red Line platforms are deeper underground. The Orange Line platforms are one level up. Signs inside the station are clear once you know what you are looking for. The Silver Line buses stop at the surface level above.
 
-Downtown Crossing is also adjacent to Park Street (roughly a five-minute walk through the underground passages or aboveground). This means you can effectively connect between Red, Orange, and all Green Line branches at this cluster of stations.`,
+Downtown Crossing and Park Street are also connected by a short underground walkway, so in practice you can get between the Red, Orange, Green, and Silver lines all at this cluster of stations.`,
       },
       {
-        heading: 'North Station',
-        body: `North Station handles two rail modes simultaneously: the Orange Line and the Green Line (B, C, D, E branches) run underground here, and the Commuter Rail platforms sit above at street level inside TD Garden.
+        heading: 'North Station: Where Rail Meets Rail',
+        body: `North Station is my home base, so I know this one well. The commuter rail platforms are at street level inside TD Garden. The Orange Line and Green Line platforms are underground below the same building.
 
-If you are arriving from the commuter rail and need to reach downtown, take the Orange Line two stops to State (connecting to Blue) or three stops to Downtown Crossing (connecting to Red). If you need the Green Line, it shares the same North Station stop on the Orange Line platform.
+The walk between the commuter rail concourse and the subway entrance takes about three to four minutes at a normal pace. If you are making a tight connection, budget five minutes to be safe. I once missed my train home because I underestimated this walk during a Bruins game when the whole building was packed.
 
-Walk time between the commuter rail platforms and the subway entrance is about 3 to 4 minutes, so factor that into your connection window.`,
+From downtown, the Orange Line gets you to North Station in two stops from Downtown Crossing and one stop from Haymarket.`,
       },
       {
         heading: 'South Station',
-        body: `South Station is the southern equivalent of North Station, connecting the Red Line to all commuter rail lines departing south and west. The Red Line platform is underground directly beneath the main train hall.
+        body: `South Station mirrors North Station for the southern corridor. The Red Line runs underground directly below the main train hall. Follow the signs down to find it.
 
-The Silver Line (SL1) to Logan Airport departs from South Station as well, from a separate lower level. If you are heading to the airport from the south side of the city, this is your route.`,
+The Silver Line SL1 to Logan Airport also departs from South Station, from a lower level. This is the cheapest and often fastest way to reach Logan from the south side of the city.`,
       },
       {
         heading: 'Back Bay',
-        body: `Back Bay is a commuter rail station on the Orange Line, served by all South Station commuter rail lines. It is one stop before South Station on many outbound trains, and one stop after on inbound ones.
+        body: `Back Bay is a stop most people overlook but it is genuinely useful. It sits on the Orange Line and is also served by commuter rail lines departing from South Station.
 
-For commuters heading to the Prudential or Copley area, alighting at Back Bay and walking or taking the Green Line is often faster than continuing to South Station and backtracking.`,
+If you are heading to the Prudential Center, Copley, or the Back Bay neighborhood, getting off here and walking is often faster than continuing to South Station and coming back on the Green Line. I use this shortcut regularly when I am coming in from the commuter rail.`,
       },
       {
         heading: 'Government Center and State',
-        body: `Government Center connects the Blue Line and the Green Line. State, just one stop away, connects the Blue Line and the Orange Line.
+        body: `These two stops sit one apart on both the Blue and Green lines and together handle the most useful Blue Line connections.
 
-If you need to get from the Blue Line to the Red or Orange Line, State is your fastest option. If you need the Green Line, ride one more stop to Government Center.`,
+State connects the Blue Line to the Orange Line. Government Center connects the Blue Line to the Green Line. So if you need to get from East Boston or Revere to the Red Line, your fastest path is Blue Line to State, then Orange Line to Downtown Crossing, then Red Line.
+
+The walk between Government Center and Haymarket is also short enough that people sometimes walk it instead of taking one stop on the Green Line.`,
       },
       {
-        heading: 'Park Street',
-        body: `Park Street is where the Red Line and all Green Line branches meet. It is the busiest station in the system. The Red Line platforms are deep underground; the Green Line platforms are at the mezzanine level.
+        heading: 'Park Street: Busiest Station in the System',
+        body: `Park Street connects the Red Line to every Green Line branch. The Red Line platforms are the deepest. The Green Line platforms are at the mezzanine level above.
 
-During rush hour, the Green Line platforms at Park Street can get extremely crowded. If you need an outbound Green Line train and you are coming from the Red Line, consider walking one stop along the surface to Boylston, which is usually less crowded.`,
-      },
-      {
-        heading: 'Ruggles',
-        body: `Ruggles sits on the Orange Line and is also a commuter rail station served by Providence, Franklin, and Fairmount lines. It sits in the heart of the Fenway/Mission Hill area and is the quickest connection between those neighborhoods and the southern commuter rail network.`,
+During morning rush hour the Green Line platforms at Park Street can get genuinely overwhelming. If you are heading outbound on the Green Line from the Red Line and the platform looks like a concert venue, try walking one stop along the surface to Boylston. It is quieter almost every time.`,
       },
     ],
   },
@@ -130,46 +124,45 @@ During rush hour, the Green Line platforms at Park Street can get extremely crow
   {
     id:       'mbta-to-logan-airport',
     slug:     'mbta-to-logan-airport',
-    title:    'Getting to Logan Airport on the MBTA: The Complete 2025 Guide',
-    subtitle: 'Silver Line, Blue Line, bus routes, and when to just take a cab',
-    date:     'March 5, 2025',
+    title:    'Getting to Logan Airport on the MBTA: What Actually Works',
+    subtitle: 'Silver Line, Blue Line, and when to just call an Uber',
+    date:     '2025-03-05',
+    dateDisplay: 'March 5, 2025',
     readMins: 6,
     tags:     ['Airport', 'Silver Line', 'Travel Tips'],
-    intro:    "Logan Airport is three miles from downtown Boston, but the MBTA connection is not always obvious. Here is every option available, with honest advice on which is fastest depending on where you are starting from.",
+    intro:    "I have taken the Silver Line to Logan more times than I can count. I have also taken a cab when the Silver Line was not the right call. Here is an honest look at both options and how to know which one to use.",
     content: [
       {
-        heading: 'The Silver Line SL1: From South Station',
-        body: `The Silver Line SL1 is the most direct MBTA route to Logan. It runs from South Station underground, emerging at the South Boston waterfront, and continues directly into the airport tunnel to terminals A, B, and C.
+        heading: 'The Silver Line SL1: Best from South Station',
+        body: `The SL1 is the cleanest option if you are starting from South Station or anywhere on the Red Line. It runs underground from South Station, pops up at the Seaport, and goes directly into the airport tunnel stopping at Terminals A, B, and C. End to end is roughly 12 to 18 minutes depending on tunnel traffic.
 
-Travel time from South Station to the first airport terminal is around 12 to 18 minutes depending on traffic in the tunnel section. The bus is free outbound from South Station (you pay the standard $2.40 fare inbound, back to downtown).
+The part that surprises most people: the SL1 is free in the outbound direction. You pay nothing to go from South Station to the airport. Coming back, you pay the standard $2.40 fare. I have no idea why it works this way but it does.
 
-The SL1 runs frequently during airport peak hours. Check the departures board at South Station or use DWELL to see real-time departures before you head down.`,
+Check DWELL before you head down, especially in the morning when delays are more common.`,
       },
       {
-        heading: 'The Blue Line: From Downtown',
-        body: `The Blue Line to Airport station is the other main option. From Government Center or State, ride the Blue Line east to the Airport stop. From there, free shuttle buses (the Logan Express Silver Line buses, numbered 22, 33, 44, 55) circulate every few minutes to all terminals.
+        heading: 'Blue Line to Airport: Best from the North',
+        body: `If you are coming from the Blue Line corridor or from the Orange Line via State Street, the Blue Line to Airport station is your route. At Airport station you pick up free shuttle buses that circulate to all terminals.
 
-The walk from the Blue Line platform to the shuttle stop is about two minutes. The shuttle from Airport station to Terminal C or E can take 8 to 15 minutes depending on how many terminals it stops at first.
-
-This route is best if you are coming from the Blue Line corridor (East Boston, Revere) or from the Orange Line via a transfer at State.`,
+The shuttle run from Airport station to your terminal can take anywhere from 5 to 15 minutes depending on which terminal is first on the loop. Terminal E (international) is usually the last stop and takes the longest. I have started leaving an extra 15 minutes on international trips because of this.`,
       },
       {
-        heading: 'Commuter Rail Riders',
-        body: `If you are arriving at North Station on the commuter rail, your fastest path to Logan is:
+        heading: 'If You Are Coming from the Commuter Rail',
+        body: `Here is the path I take when I am flying out of Logan from the North Shore:
 
-Take the Orange Line from North Station to State (2 stops). Transfer to the Blue Line at State. Ride the Blue Line to Airport station. Take the free terminal shuttle.
+Take the commuter rail inbound to North Station. Take the Orange Line two stops south to State. Transfer to the Blue Line at State. Ride to Airport station. Take the free terminal shuttle.
 
-Total time from North Station to the terminal shuttle stop is typically 20 to 30 minutes, not accounting for wait times. Budget 45 minutes from boarding your Orange Line train to reaching your terminal.`,
+Door to door from my house in Salem to the Delta terminal has been as fast as 55 minutes when everything connects. It has also taken 90 minutes when trains were delayed. I budget 75 minutes and have a backup plan for anything earlier than 7am.`,
       },
       {
-        heading: 'When to Skip the T',
-        body: `The MBTA is not always the right choice for the airport, even if you are committed to public transit. Specific situations where a rideshare or taxi is better:
+        heading: 'When the T Is Not the Right Call',
+        body: `I will be honest about this because too many guides oversell public transit to the airport. There are situations where a cab or rideshare is simply better.
 
-If you have more than one large bag. The Silver Line buses and Blue Line trains have limited luggage space and no assistance. Rush hour is unpleasant with a 28-inch rolling suitcase.
+If you have two large bags or anything that needs special handling, the Silver Line in particular can be genuinely uncomfortable during rush hour. I have done it with a 28-inch suitcase and it was fine on an off-peak Tuesday and miserable on a Friday afternoon.
 
-If your flight departs before 5:30am. The first SL1 from South Station runs around 5:25am and the Blue Line starts around 5:15am. Earlier departures require a cab or rideshare from wherever you are staying.
+If your flight leaves before 5:30am, the first SL1 from South Station runs around 5:25am and the Blue Line starts around 5:15am. Before that you need a cab or rideshare regardless.
 
-If you are coming from the western suburbs. A commuter rail ride to South Station, then the SL1, adds time that a direct cab from Route 128 does not.`,
+If you are coming from the western suburbs on the Framingham line, the math sometimes works out better for a direct ride. Commuter rail to South Station, then Silver Line to the airport, adds at least 30 minutes to what would otherwise be a 25 minute cab ride from Natick.`,
       },
     ],
   },
@@ -178,66 +171,103 @@ If you are coming from the western suburbs. A commuter rail ride to South Statio
     id:       'boston-subway-line-guide',
     slug:     'boston-subway-line-guide',
     title:    'Boston Subway Lines Explained: Red, Orange, Green, Blue',
-    subtitle: 'A straightforward guide to every line, its stops, and who uses it',
-    date:     'January 18, 2025',
+    subtitle: 'What each line covers and which one you actually need',
+    date:     '2025-01-18',
+    dateDisplay: 'January 18, 2025',
     readMins: 8,
     tags:     ['Subway', 'Beginner', 'Boston'],
-    intro:    "Boston's subway, locally called the T, has four main lines and the Silver Line bus rapid transit network. Each runs a distinct corridor through the city. Here is what you need to know about each one.",
+    intro:    "When I first moved to Boston I looked at the MBTA map and felt mildly overwhelmed. Four colored lines, multiple branches, a Silver Line that is secretly a bus. Here is a plain-language breakdown of what each line does and who it is for.",
     content: [
       {
-        heading: 'Red Line',
-        body: `The Red Line is the backbone of the system. It runs from Alewife in Cambridge through Harvard, Central, and Kendall/MIT, crosses into Boston at Charles/MGH, passes through Park Street and Downtown Crossing, and then splits into two branches south of JFK/UMass.
+        heading: 'Red Line: The Backbone',
+        body: `The Red Line is the most used line in the system and runs a north-south route through Cambridge and Boston. It starts at Alewife in northwest Cambridge, goes through Harvard, MIT, and Charles/MGH, crosses the river into Boston at Charles, and then hits Park Street and Downtown Crossing before splitting into two branches south of JFK/UMass.
 
-The Braintree branch continues south through Quincy Center and Quincy Adams to Braintree. The Ashmont branch serves Savin Hill, Fields Corner, Shawmut, and Ashmont. Both branches are served from the same tracks until JFK/UMass.
+The Braintree branch goes south through the Quincy neighborhoods to Braintree. The Ashmont branch serves Dorchester neighborhoods including Fields Corner and Savin Hill. Both branches are served by the same trains until JFK, where they split.
 
-The Red Line is the most used subway line in the system. During rush hour it can feel impossibly crowded between Harvard and Downtown Crossing. If you have the flexibility, the first and last cars are typically less packed than the middle ones.`,
+The stretch between Harvard and Downtown Crossing is brutal during rush hour. I have stood pressed against the door for the full trip more than once. The first and last cars are usually slightly less crowded than the middle cars.`,
       },
       {
-        heading: 'Orange Line',
-        body: `The Orange Line runs north-south through the center of Boston, from Oak Grove in Malden to Forest Hills in Jamaica Plain. Key stops include North Station, Haymarket, Downtown Crossing, Back Bay, and Jackson Square.
+        heading: 'Orange Line: North to South Through the Middle',
+        body: `The Orange Line runs from Oak Grove in Malden straight down through the center of Boston to Forest Hills in Jamaica Plain. Key stops include North Station, Downtown Crossing, Back Bay, Ruggles, and Jackson Square.
 
-The Orange Line serves a dense corridor of neighborhoods and is the main connection between the North Shore commuter rail (via North Station) and the South Shore commuter rail (via Back Bay and South Station, one stop off the line).
-
-The Orange Line fleet was fully replaced with new cars between 2019 and 2023, making it the newest rolling stock in the system. Ride quality is noticeably smoother than the Red or Green lines.`,
+It connects the two major commuter rail hubs, which makes it genuinely useful for anyone arriving from outside the city. The fleet was fully replaced with new cars a few years ago, so it is the smoothest ride in the system. I take it from North Station every day and it has been noticeably more reliable since the new cars came in.`,
       },
       {
-        heading: 'Green Line',
-        body: `The Green Line is the most complex part of the T. It runs underground through downtown, emerges at Kenmore, and then splits into four branches: B (Boston College), C (Cleveland Circle), D (Riverside), and E (Heath Street, with a newer extension to Medford/Tufts).
+        heading: 'Green Line: The Complicated One',
+        body: `The Green Line is the oldest part of the system and the hardest to understand at first. It runs underground through downtown, comes up at Kenmore, and then splits into four branches heading west and southwest.
 
-The surface sections of the Green Line are street-running, meaning the trains share space with cars and buses and can get delayed by traffic. This is why Green Line times are harder to predict than other lines.
+B branch goes to Boston College along Commonwealth Avenue, sharing the street with cars for much of the way. C branch goes to Cleveland Circle through Brookline. D branch runs on its own right-of-way out to Riverside in Newton, which makes it the fastest and most reliable of the four. E branch heads south to Heath Street, with a newer extension north through Fenway, Mission Park, and all the way to Medford/Tufts.
 
-The B branch is the longest and takes the most time. The D branch is the fastest because it runs on its own right-of-way through Brookline and Newton. If you are heading to Fenway Park, any branch gets you to Kenmore; the D branch is often the fastest.`,
+The surface sections are subject to traffic delays, which is why Green Line arrival times are harder to predict than other lines. I have found the D branch to be the most consistent by a significant margin.`,
       },
       {
-        heading: 'Blue Line',
-        body: `The Blue Line runs from Bowdoin in downtown Boston under the harbor to East Boston and then north along the coast to Wonderland in Revere. Key stops are Government Center, State, Airport, and Revere Beach.
+        heading: 'Blue Line: East Boston and the Airport',
+        body: `The Blue Line runs from Bowdoin in downtown under the harbor to East Boston and then north along the coast through Revere to Wonderland. It is the main transit lifeline for East Boston and Revere, and the only direct connection to Logan Airport.
 
-The Blue Line is the best public transit option for East Boston and Revere. It is also the only direct transit link to Logan Airport via free terminal shuttles from the Airport station.
-
-The Blue Line uses the oldest tunnel infrastructure in the system, dating to 1904. It also has the shortest trains, typically only two or three cars during off-peak hours.`,
+The infrastructure here is the oldest in the system, dating back to 1904. You can feel it. The trains are shorter, the stations are tighter, and the whole thing has a certain vintage quality that I have come to appreciate. The airport connection via free shuttles from Airport station is what most non-residents use it for.`,
       },
       {
-        heading: 'Silver Line',
-        body: `The Silver Line is a bus rapid transit network rather than a rail line, though it uses the same CharlieCard fare system. There are three sub-routes: SL1 (South Station to Logan Airport), SL2 (South Station to South Boston Waterfront), and SL3 (South Station to Chelsea via the Seaport).
+        heading: 'Silver Line: Bus Rapid Transit with a Brand',
+        body: `The Silver Line is not a rail line. It is a network of buses that uses the same fare system and runs in dedicated lanes or tunnels in certain sections. There are three sub-routes: SL1 to Logan Airport, SL2 to the Seaport waterfront, and SL3 to Chelsea.
 
-In the downtown core, the Silver Line buses run underground in a dedicated tunnel. Once they emerge in South Boston or head toward Chelsea, they run in surface traffic like any other bus, which limits reliability.
+In the downtown core the buses run underground in a dedicated tunnel and feel like a subway. Once they surface in South Boston or head toward Chelsea they are in traffic like any other bus. The reliability drops noticeably on the surface sections.
 
-The SL1 to Logan is free in the outbound direction (South Station to Airport). Inbound (Airport to South Station) costs the standard $2.40 subway fare.`,
+The SL1 to the airport is free outbound from South Station, which is the main reason most visitors end up using it.`,
       },
       {
-        heading: 'Fares and CharlieCard',
-        body: `All subway lines charge a flat $2.40 fare per ride as of 2025. The cheapest way to pay is with a CharlieCard, a reusable plastic card that you load with funds at any station kiosk. Cash and contactless credit/debit card payment are also accepted at turnstiles, but cost slightly more per ride.
+        heading: 'Fares and How to Pay',
+        body: `Every subway line charges a flat $2.40 per ride. The CharlieCard is a reusable plastic card you load at station kiosks. It gives you the base fare with no surcharge. You can also tap a contactless credit or debit card directly at the turnstile.
 
-Transfers between subway lines within the same fare gate are free. If you exit the system and re-enter (for example, to make a long walking transfer), you pay a new fare.
-
-Monthly and weekly passes are available and save money for regular riders. A monthly subway pass runs around $90 and is worth it if you ride more than 38 times per month.`,
+Transfers between lines within the same paid zone are free as long as you do not exit the system. Monthly passes are available for around $90 and pay for themselves if you ride more than 38 times in a month.`,
       },
     ],
   },
 ]
 
-// ── Shared components ─────────────────────────────────────────────────────────
+// ── Inject JSON-LD Article schema into document head ─────────────────────────
+function injectArticleSchema(article) {
+  const id = 'dwell-article-schema'
+  let el = document.getElementById(id)
+  if (!el) {
+    el = document.createElement('script')
+    el.id = id
+    el.type = 'application/ld+json'
+    document.head.appendChild(el)
+  }
+  el.textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.subtitle,
+    datePublished: article.date,
+    dateModified: article.date,
+    author: {
+      '@type': 'Person',
+      name: AUTHOR.name,
+      url: AUTHOR.url,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'DWELL',
+      url: SITE_URL,
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${SITE_URL}/guides/${article.slug}`,
+    },
+    image: `${SITE_URL}/og-image.png`,
+    keywords: article.tags.join(', '),
+    articleSection: 'MBTA Transit Guides',
+    wordCount: article.content.reduce((sum, s) => sum + s.body.split(' ').length, 0),
+  })
+}
 
+function removeArticleSchema() {
+  const el = document.getElementById('dwell-article-schema')
+  if (el) el.remove()
+}
+
+// ── Shared UI ─────────────────────────────────────────────────────────────────
 function TagBadge({ label }) {
   return (
     <span style={{
@@ -272,9 +302,17 @@ function AuthorLine({ date, mins }) {
   )
 }
 
-// ── Article view ──────────────────────────────────────────────────────────────
-
+// ── Article page ──────────────────────────────────────────────────────────────
 function ArticlePage({ article, onBack }) {
+  useEffect(() => {
+    injectArticleSchema(article)
+    document.title = `${article.title} | DWELL`
+    return () => {
+      removeArticleSchema()
+      document.title = 'DWELL | MBTA Live Arrivals'
+    }
+  }, [article])
+
   return (
     <article className="anim-fade-in">
       <button onClick={onBack} style={{
@@ -289,40 +327,39 @@ function ArticlePage({ article, onBack }) {
         <span>←</span> All Guides
       </button>
 
-      {/* Tags */}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
         {article.tags.map(t => <TagBadge key={t} label={t} />)}
       </div>
 
-      {/* Title */}
       <h1 style={{
         fontFamily: 'var(--display)', fontWeight: 800,
-        fontSize: 'clamp(22px, 5vw, 36px)', letterSpacing: '0.02em',
-        color: 'var(--text)', lineHeight: 1.15, marginBottom: 10,
+        fontSize: 'clamp(20px, 4.5vw, 32px)', letterSpacing: '0.02em',
+        color: 'var(--text)', lineHeight: 1.2, marginBottom: 10,
       }}>{article.title}</h1>
 
       <p style={{
-        fontFamily: 'var(--sans)', fontSize: 16, color: 'var(--text-muted)',
+        fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--text-muted)',
         lineHeight: 1.6, marginBottom: 20,
       }}>{article.subtitle}</p>
 
-      <div style={{ height: 2, background: 'linear-gradient(90deg, var(--accent), transparent)', marginBottom: 24, borderRadius: 1 }} />
+      <div style={{ height: 2, background: 'linear-gradient(90deg, var(--accent), var(--cyan), transparent)', marginBottom: 24, borderRadius: 1 }} />
 
-      <AuthorLine date={article.date} mins={article.readMins} />
+      <AuthorLine date={article.dateDisplay} mins={article.readMins} />
 
       {/* Intro */}
       <p style={{
         fontFamily: 'var(--sans)', fontSize: 16, color: 'var(--text)',
         lineHeight: 1.85, marginBottom: 32,
-        paddingLeft: 16, borderLeft: '3px solid var(--accent)',
+        paddingLeft: 18, borderLeft: '3px solid var(--accent)',
+        boxShadow: '-4px 0 16px rgba(245,206,62,0.15)',
       }}>{article.intro}</p>
 
       {/* Sections */}
       {article.content.map((section, i) => (
         <section key={i} style={{ marginBottom: 36 }}>
           <h2 style={{
-            fontFamily: 'var(--display)', fontSize: 15, fontWeight: 700,
-            letterSpacing: '0.06em', color: 'var(--accent)',
+            fontFamily: 'var(--display)', fontSize: 13, fontWeight: 700,
+            letterSpacing: '0.08em', color: 'var(--accent)',
             marginBottom: 14, textTransform: 'uppercase',
           }}>{section.heading}</h2>
           {section.body.split('\n\n').map((para, j) => (
@@ -336,21 +373,25 @@ function ArticlePage({ article, onBack }) {
 
       {/* Author bio */}
       <div style={{
-        marginTop: 48, paddingTop: 24, borderTop: '1px solid var(--border)',
-        display: 'flex', gap: 14, alignItems: 'flex-start',
+        marginTop: 48, padding: '20px 24px',
+        background: 'var(--bg-3)', border: '1px solid var(--border)',
+        borderLeft: '3px solid var(--accent)',
+        borderRadius: 'var(--radius-md)',
       }}>
-        <div style={{
-          width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
-          background: 'var(--bg-4)', border: '2px solid var(--accent)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'var(--display)', fontSize: 18, fontWeight: 800, color: 'var(--accent)',
-        }}>M</div>
-        <div>
-          <div style={{ fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
-            {AUTHOR.name}
-          </div>
-          <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.65 }}>
-            {AUTHOR.bio}
+        <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
+            background: 'var(--bg-4)', border: '2px solid var(--accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--display)', fontSize: 18, fontWeight: 800, color: 'var(--accent)',
+          }}>M</div>
+          <div>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
+              {AUTHOR.name}
+            </div>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7 }}>
+              {AUTHOR.bio}
+            </div>
           </div>
         </div>
       </div>
@@ -359,7 +400,6 @@ function ArticlePage({ article, onBack }) {
 }
 
 // ── Guides index ──────────────────────────────────────────────────────────────
-
 function GuidesIndex({ onSelect }) {
   return (
     <div className="anim-fade-in">
@@ -367,7 +407,7 @@ function GuidesIndex({ onSelect }) {
         <MonoLabel style={{ display: 'block', marginBottom: 8 }}>DWELL</MonoLabel>
         <h1 style={{
           fontFamily: 'var(--display)', fontWeight: 800,
-          fontSize: 'clamp(26px, 6vw, 42px)', letterSpacing: '0.04em',
+          fontSize: 'clamp(24px, 5vw, 38px)', letterSpacing: '0.04em',
           color: 'var(--text)', lineHeight: 1.1, margin: 0,
         }}>Transit Guides</h1>
         <p style={{ fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.6 }}>
@@ -375,7 +415,7 @@ function GuidesIndex({ onSelect }) {
         </p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {ARTICLES.map((a, i) => (
           <button key={a.id} onClick={() => onSelect(a)}
             className="anim-fade-up"
@@ -390,13 +430,11 @@ function GuidesIndex({ onSelect }) {
               cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.18s',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.borderColor = 'var(--accent)'
               e.currentTarget.style.background = 'rgba(245,206,62,0.05)'
               e.currentTarget.style.boxShadow = '0 0 20px rgba(245,206,62,0.1), -4px 0 12px rgba(245,206,62,0.2)'
               e.currentTarget.style.transform = 'translateX(3px)'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.borderColor = 'var(--border)'
               e.currentTarget.style.background = 'var(--bg-3)'
               e.currentTarget.style.boxShadow = 'none'
               e.currentTarget.style.transform = 'none'
@@ -406,15 +444,15 @@ function GuidesIndex({ onSelect }) {
               {a.tags.map(t => <TagBadge key={t} label={t} />)}
             </div>
             <h2 style={{
-              fontFamily: 'var(--display)', fontSize: 16, fontWeight: 700,
+              fontFamily: 'var(--display)', fontSize: 15, fontWeight: 700,
               letterSpacing: '0.02em', color: 'var(--text)', lineHeight: 1.3,
             }}>{a.title}</h2>
             <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.55, margin: 0 }}>
               {a.subtitle}
             </p>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 4 }}>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>
-                {AUTHOR.name} · {a.date}
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 2 }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
+                {AUTHOR.name} · {a.dateDisplay}
               </span>
               <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--text-dim)' }}>{a.readMins} min read</span>
               <span style={{ marginLeft: 'auto', fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--accent)', letterSpacing: '0.1em' }}>READ →</span>
@@ -426,15 +464,18 @@ function GuidesIndex({ onSelect }) {
   )
 }
 
-// ── GuidesPage — exported ─────────────────────────────────────────────────────
+// ── GuidesPage export ─────────────────────────────────────────────────────────
 export default function GuidesPage() {
-  const [selected, setSelected] = useState(null)
+  const [selected, setSelected] = useState(() => {
+    // Support direct links to article slugs e.g. /guides/mbta-commuter-rail-guide
+    const path = window.location.pathname
+    const slug = path.replace('/guides/', '').replace('/guides', '')
+    return slug ? ARTICLES.find(a => a.slug === slug) || null : null
+  })
 
-  // Sync URL with selected article
-  React.useEffect(() => {
+  useEffect(() => {
     if (selected) {
       window.history.pushState({}, '', `/guides/${selected.slug}`)
-      document.title = `${selected.title} | DWELL`
     } else {
       window.history.pushState({}, '', '/guides')
       document.title = 'Transit Guides | DWELL'
@@ -445,5 +486,4 @@ export default function GuidesPage() {
   return <GuidesIndex onSelect={setSelected} />
 }
 
-// Export article list for sitemap generation
 export { ARTICLES }
