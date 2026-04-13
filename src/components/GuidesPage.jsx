@@ -6,7 +6,7 @@ const SITE_URL = 'https://dwellmbta.com'
 const AUTHOR = {
   name:  'Michael M',
   alias: 'mich',
-  bio:   'I have been commuting the Newburyport line into North Station since 2019. I built DWELL because I was tired of opening five different apps just to know if my train was running. These guides are the things I wished someone had told me when I first moved to Boston.',
+  bio:   'I have been commuting the Newburyport line from Salem into North Station since 2022. I built DWELL because I was tired of opening five different apps just to know if my train was running. These guides are the things I wished someone had told me when I first moved to the area.',
   url:   `${SITE_URL}/guides`,
 }
 
@@ -20,7 +20,7 @@ const ARTICLES = [
     dateDisplay: 'March 12, 2025',
     readMins: 9,
     tags:     ['Commuter Rail', 'Getting Around', 'Beginner'],
-    intro:    "I moved to Salem in 2019 and figured out the commuter rail mostly by trial and error. Missed trains, wrong platforms, surprise fares. This is the guide I needed then. Boston's commuter rail is genuinely one of the best ways to get around the region, but the learning curve is steeper than it should be.",
+    intro:    "I have been commuting from Salem to North Station on the Newburyport line since 2022, and I figured out most of it by trial and error. Missed trains, wrong platforms, surprise fares on my first week. This is the guide I needed then. Boston's commuter rail is genuinely one of the best ways to get around the region, but the learning curve is steeper than it should be.",
     content: [
       {
         heading: 'What the Commuter Rail Actually Is',
@@ -234,6 +234,7 @@ function injectArticleSchema(article) {
     el.type = 'application/ld+json'
     document.head.appendChild(el)
   }
+  const wordCount = article.content.reduce((sum, s) => sum + s.body.split(' ').length, 0)
   el.textContent = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -255,16 +256,73 @@ function injectArticleSchema(article) {
       '@type': 'WebPage',
       '@id': `${SITE_URL}/guides/${article.slug}`,
     },
-    image: `${SITE_URL}/og-image.png`,
+    image: {
+      '@type': 'ImageObject',
+      url: `${SITE_URL}/og-image.png`,
+      width: 1200,
+      height: 630,
+    },
     keywords: article.tags.join(', '),
     articleSection: 'MBTA Transit Guides',
-    wordCount: article.content.reduce((sum, s) => sum + s.body.split(' ').length, 0),
+    wordCount,
+    timeRequired: `PT${article.readMins}M`,
+    about: {
+      '@type': 'Thing',
+      name: 'MBTA',
+      sameAs: 'https://www.mbta.com/',
+    },
   })
+
+  // Inject BreadcrumbList for this article
+  const breadId = 'dwell-breadcrumb-schema'
+  let breadEl = document.getElementById(breadId)
+  if (!breadEl) {
+    breadEl = document.createElement('script')
+    breadEl.id = breadId
+    breadEl.type = 'application/ld+json'
+    document.head.appendChild(breadEl)
+  }
+  breadEl.textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'DWELL',  item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Guides', item: `${SITE_URL}/guides` },
+      { '@type': 'ListItem', position: 3, name: article.title, item: `${SITE_URL}/guides/${article.slug}` },
+    ],
+  })
+
+  // Update meta description for this article
+  let metaDesc = document.querySelector('meta[name="description"]')
+  if (metaDesc) metaDesc.setAttribute('content', `${article.subtitle}. A guide for Boston MBTA commuters by ${AUTHOR.name}. ${article.tags.join(', ')}.`)
+
+  // Update canonical
+  let canonical = document.querySelector('link[rel="canonical"]')
+  if (canonical) canonical.href = `${SITE_URL}/guides/${article.slug}`
+
+  // Update og:title and og:description for share previews
+  const og = (prop, val) => {
+    const el = document.querySelector(`meta[property="og:${prop}"]`)
+    if (el) el.setAttribute('content', val)
+  }
+  og('title', `${article.title} | DWELL`)
+  og('description', article.subtitle)
+  og('url', `${SITE_URL}/guides/${article.slug}`)
 }
 
 function removeArticleSchema() {
-  const el = document.getElementById('dwell-article-schema')
-  if (el) el.remove()
+  document.getElementById('dwell-article-schema')?.remove()
+  document.getElementById('dwell-breadcrumb-schema')?.remove()
+  // Restore canonical and meta to homepage defaults
+  const canonical = document.querySelector('link[rel="canonical"]')
+  if (canonical) canonical.href = `${SITE_URL}/`
+  const metaDesc = document.querySelector('meta[name="description"]')
+  if (metaDesc) metaDesc.setAttribute('content',
+    'Real-time MBTA arrival times for every subway, commuter rail, and bus stop in Greater Boston. Live predictions, service alerts, and trip planning — free, no account required.')
+  const og = (prop, val) => { const el = document.querySelector(`meta[property="og:${prop}"]`); if (el) el.setAttribute('content', val) }
+  og('title', 'DWELL | MBTA Live Arrivals')
+  og('description', 'Real-time MBTA arrivals for Greater Boston. Subway, commuter rail, and bus.')
+  og('url', `${SITE_URL}/`)
 }
 
 // ── Shared UI ─────────────────────────────────────────────────────────────────
@@ -483,6 +541,37 @@ export default function GuidesPage() {
   }, [selected])
 
   if (selected) return <ArticlePage article={selected} onBack={() => setSelected(null)} />
+  // Inject ItemList schema for the guides index
+  React.useEffect(() => {
+    if (!selected) {
+      const id = 'dwell-guides-list-schema'
+      let el = document.getElementById(id)
+      if (!el) {
+        el = document.createElement('script')
+        el.id = id
+        el.type = 'application/ld+json'
+        document.head.appendChild(el)
+      }
+      el.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: 'MBTA Transit Guides',
+        description: 'Practical guides to using the MBTA in Greater Boston, written by real commuters.',
+        url: `${SITE_URL}/guides`,
+        numberOfItems: ARTICLES.length,
+        itemListElement: ARTICLES.map((a, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: a.title,
+          url: `${SITE_URL}/guides/${a.slug}`,
+          description: a.subtitle,
+        })),
+      })
+    } else {
+      document.getElementById('dwell-guides-list-schema')?.remove()
+    }
+  }, [selected])
+
   return <GuidesIndex onSelect={setSelected} />
 }
 
