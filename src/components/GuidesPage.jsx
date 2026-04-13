@@ -422,7 +422,7 @@ function ArticlePage({ article, onBack }) {
           }}>{section.heading}</h2>
           {section.body.split('\n\n').map((para, j) => (
             <p key={j} style={{
-              fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--text-muted)',
+              fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--text)',
               lineHeight: 1.85, marginBottom: 16,
             }}>{para}</p>
           ))}
@@ -447,7 +447,7 @@ function ArticlePage({ article, onBack }) {
             <div style={{ fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
               {AUTHOR.name}
             </div>
-            <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7 }}>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text)', lineHeight: 1.7 }}>
               {AUTHOR.bio}
             </div>
           </div>

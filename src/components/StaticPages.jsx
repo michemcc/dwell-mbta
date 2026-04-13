@@ -60,7 +60,7 @@ function PageShell({ title, label, current, onNavigate, children }) {
       </div>
 
       {/* Content */}
-      <div style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.8 }}>
+      <div style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.8 }}>
         {children}
       </div>
     </div>
@@ -68,7 +68,7 @@ function PageShell({ title, label, current, onNavigate, children }) {
 }
 
 function P({ children, style }) {
-  return <p style={{ marginBottom: 20, fontFamily: 'var(--sans)', ...style }}>{children}</p>
+  return <p style={{ marginBottom: 20, fontFamily: 'var(--sans)', color: 'var(--text)', lineHeight: 1.8, ...style }}>{children}</p>
 }
 function H({ children }) {
   return (

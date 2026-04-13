@@ -4,14 +4,14 @@
 
 /* ── Dark theme — ops-center HUD ────────────────────────────────── */
 :root, [data-theme="dark"] {
-  --bg:          #03040A;
-  --bg-2:        #07091080;
-  --bg-3:        #0C0F1A;
-  --bg-4:        #121622;
+  --bg:          #06070F;        /* slightly lighter so contrast ratio increases */
+  --bg-2:        #090C1680;
+  --bg-3:        #0D1020;
+  --bg-4:        #141828;
 
-  --text:        #E8ECF5;
-  --text-muted:  #8B96B8;
-  --text-dim:    #485070;
+  --text:        #F0F2FA;        /* near-white, clearly legible */
+  --text-muted:  #B4BCE0;        /* was #8B96B8 — lifted ~25%, now AA compliant */
+  --text-dim:    #7080A8;        /* was #485070 — lifted ~40%, actually readable */
 
   /* Primary accent — electric amber */
   --accent:      #F5CE3E;
@@ -32,7 +32,7 @@
   --scanline:    rgba(0,0,0,0.032);
 
   --nav-bg:      rgba(3,4,10,0.97);
-  --nav-text:    #6878A0;
+  --nav-text:    #8898C4;   /* was #6878A0 — lifted for readability */
 
   /* Glow values */
   --glow-accent: 0 0 18px rgba(245,206,62,0.35);
@@ -41,13 +41,13 @@
 
 /* ── Light theme ─────────────────────────────────────────────────── */
 [data-theme="light"] {
-  --bg:          #F2F1EC;
-  --bg-2:        #E9E8E2;
-  --bg-3:        #E0DED8;
-  --bg-4:        #D4D2CB;
-  --text:        #0E0F14;
-  --text-muted:  #3A3C48;
-  --text-dim:    #7A7C8A;
+  --bg:          #F8F7F2;        /* slightly lighter base so text pops more */
+  --bg-2:        #EFEEE9;
+  --bg-3:        #E6E4DE;
+  --bg-4:        #D8D5CD;
+  --text:        #09090E;        /* deeper black for max contrast */
+  --text-muted:  #2E303C;        /* was #3A3C48 — darker, clearly AA compliant */
+  --text-dim:    #636678;        /* was #7A7C8A — darker, now 4.5:1 on light bg */
   --accent:      #9A7500;
   --accent-dim:  #5E4700;
   --accent-text: #FFFFFF;
@@ -61,7 +61,7 @@
   --shadow:      rgba(0,0,0,0.14);
   --scanline:    transparent;
   --nav-bg:      rgba(220,218,210,0.98);
-  --nav-text:    #28293A;
+  --nav-text:    #1E2030;   /* deeper for light nav bg */
   --glow-accent: none;
   --glow-cyan:   none;
 }
