@@ -540,9 +540,8 @@ export default function GuidesPage() {
     }
   }, [selected])
 
-  if (selected) return <ArticlePage article={selected} onBack={() => setSelected(null)} />
-  // Inject ItemList schema for the guides index
-  React.useEffect(() => {
+  // ItemList schema for guides index — must be above any early return (Rules of Hooks)
+  useEffect(() => {
     if (!selected) {
       const id = 'dwell-guides-list-schema'
       let el = document.getElementById(id)
@@ -572,6 +571,7 @@ export default function GuidesPage() {
     }
   }, [selected])
 
+  if (selected) return <ArticlePage article={selected} onBack={() => setSelected(null)} />
   return <GuidesIndex onSelect={setSelected} />
 }
 
