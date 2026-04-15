@@ -10,7 +10,7 @@ import GuidesPage from './components/GuidesPage'
 import CookieBanner from './components/CookieBanner'
 import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primitives'
 
-const VERSION = '2026.4.9'
+const VERSION = '2026.4.10'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
 // ── QuickSearch — stop search, instant commit, no route-picking step ────────
