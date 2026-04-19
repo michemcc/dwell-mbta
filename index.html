@@ -8,7 +8,7 @@
     <title>DWELL | MBTA Live Arrivals — Boston Subway, Commuter Rail & Bus</title>
     <meta name="description" content="Real-time MBTA arrival times for every subway, commuter rail, and bus stop in Greater Boston. Live predictions, service alerts, trip planning, and saved stops — free, no account required." />
     <meta name="keywords" content="MBTA arrivals, Boston subway times, MBTA live tracker, Red Line arrivals, Orange Line arrivals, Green Line arrivals, Blue Line arrivals, commuter rail schedule, MBTA bus tracker, T arrivals Boston, MBTA real time, South Station departures, North Station departures, Downtown Crossing, Park Street, Alewife, Forest Hills, Kenmore, Boston transit app" />
-    <meta name="author" content="DWELL" />
+    <meta name="author" content="Michael M" />
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow" />
     <link rel="canonical" href="https://dwellmbta.com/" />
@@ -27,7 +27,7 @@
     <meta property="og:image"        content="https://dwellmbta.com/og-image.png" />
     <meta property="og:image:width"  content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt"    content="DWELL — MBTA Live Arrivals dashboard showing real-time Boston transit predictions" />
+    <meta property="og:image:alt"    content="DWELL MBTA Live Arrivals dashboard" />
     <meta property="og:site_name"    content="DWELL" />
     <meta property="og:locale"       content="en_US" />
 
@@ -36,10 +36,9 @@
     <meta name="twitter:title"       content="DWELL | MBTA Live Arrivals" />
     <meta name="twitter:description" content="Real-time MBTA arrivals for Greater Boston — subway, commuter rail, and bus. Free, no account required." />
     <meta name="twitter:image"       content="https://dwellmbta.com/og-image.png" />
-    <meta name="twitter:image:alt"   content="DWELL MBTA Live Arrivals" />
 
     <!-- ── Theme & PWA ────────────────────────────────────────────────── -->
-    <meta name="theme-color" content="#05060A" />
+    <meta name="theme-color" content="#06070F" />
     <meta name="application-name" content="DWELL" />
     <meta name="apple-mobile-web-app-title" content="DWELL" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -47,12 +46,11 @@
     <meta name="mobile-web-app-capable" content="yes" />
 
     <!-- ── Favicon ────────────────────────────────────────────────────── -->
-    <!-- Real file URLs — Google's crawler ignores data: URI favicons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon"  href="/favicon.ico" />
     <link rel="apple-touch-icon"           href="/apple-touch-icon.svg" />
 
-    <!-- ── Structured data — WebApplication ───────────────────────────── -->
+    <!-- ── Structured data: WebApplication ────────────────────────────── -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -66,16 +64,9 @@
       "operatingSystem": "Any",
       "browserRequirements": "Requires JavaScript",
       "isAccessibleForFree": true,
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "provider": {
-        "@type": "Organization",
-        "name": "DWELL",
-        "url": "https://dwellmbta.com/"
-      },
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@type": "Person", "name": "Michael M" },
+      "publisher": { "@type": "Organization", "name": "DWELL", "url": "https://dwellmbta.com/" },
       "featureList": [
         "Real-time MBTA subway arrival predictions",
         "Commuter rail live departure times",
@@ -88,24 +79,13 @@
       "areaServed": {
         "@type": "AdministrativeArea",
         "name": "Greater Boston",
-        "containedInPlace": {
-          "@type": "State",
-          "name": "Massachusetts",
-          "containedInPlace": {
-            "@type": "Country",
-            "name": "United States"
-          }
-        }
+        "containedInPlace": { "@type": "State", "name": "Massachusetts" }
       },
-      "about": {
-        "@type": "Thing",
-        "name": "MBTA — Massachusetts Bay Transportation Authority",
-        "sameAs": "https://www.mbta.com/"
-      }
+      "about": { "@type": "Thing", "name": "MBTA", "sameAs": "https://www.mbta.com/" }
     }
     </script>
 
-    <!-- ── Structured data — FAQPage ──────────────────────────────────── -->
+    <!-- ── Structured data: FAQPage ───────────────────────────────────── -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -114,42 +94,22 @@
         {
           "@type": "Question",
           "name": "How do I check live MBTA arrivals?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Type any stop name — like Park Street, South Station, or Salem — into DWELL's search bar and tap the result. Live predictions appear instantly, updated every 20 seconds from the MBTA API."
-          }
+          "acceptedAnswer": { "@type": "Answer", "text": "Type any stop name into DWELL's search bar and tap the result. Live predictions appear instantly, updated every 20 seconds from the official MBTA API." }
         },
         {
           "@type": "Question",
           "name": "Which MBTA lines does DWELL cover?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "DWELL covers all MBTA lines: Red Line, Orange Line, Green Line (B, C, D, E branches), Blue Line, Silver Line, all Commuter Rail routes, and bus stops across Greater Boston."
-          }
+          "acceptedAnswer": { "@type": "Answer", "text": "DWELL covers all MBTA lines: Red, Orange, Green (B, C, D, E), Blue, Silver, all Commuter Rail routes, and bus stops across Greater Boston." }
         },
         {
           "@type": "Question",
           "name": "Is DWELL free to use?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. DWELL is completely free, requires no account, and has no login. It runs in your browser on any device."
-          }
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. DWELL is completely free, requires no account, and runs in your browser on any device." }
         },
         {
           "@type": "Question",
-          "name": "How accurate are DWELL's MBTA predictions?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "DWELL uses the official MBTA v3 API — the same real-time data the MBTA's own app uses. Predictions update every 20 seconds and reflect current vehicle positions and dwell times."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can I plan a trip with transfers on DWELL?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. The Plan tab lets you enter any two stops and DWELL finds direct connections or 1-transfer journeys, showing live departure times and estimated ride duration for each leg."
-          }
+          "name": "How accurate are the predictions?",
+          "acceptedAnswer": { "@type": "Answer", "text": "DWELL uses the official MBTA v3 API — the same real-time data the MBTA app uses. Predictions update every 20 seconds and reflect current vehicle positions." }
         }
       ]
     }
@@ -164,71 +124,108 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 
-    <!-- ── Pre-render styles (visible before JS loads) ───────────────── -->
+    <!-- ── Pre-render styles ──────────────────────────────────────────── -->
     <style>
-      body { margin: 0; background: #05060A; color: #F4F5F7; font-family: system-ui, sans-serif; }
-      #pre-render { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
-      #pre-render h1 { font-size: 48px; font-weight: 800; letter-spacing: 0.02em; margin: 0 0 6px; color: #F4F5F7; }
-      #pre-render h1 span { color: #F2CA45; }
-      #pre-render p  { font-size: 15px; line-height: 1.7; color: #B8BFCF; margin: 0 0 12px; }
-      #pre-render h2 { font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #7A8090; margin: 28px 0 10px; font-weight: 500; }
-      #pre-render ul { padding-left: 20px; color: #B8BFCF; font-size: 15px; line-height: 1.9; margin: 0 0 16px; }
-      #pre-render .loading { font-size: 11px; letter-spacing: 0.14em; color: #7A8090; text-transform: uppercase; margin-top: 40px; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { background: #06070F; color: #F0F2FA; font-family: 'IBM Plex Sans', system-ui, sans-serif; line-height: 1.7; }
+      #pre-render { max-width: 860px; margin: 0 auto; padding: 32px 20px 120px; }
+      #pre-render header { border-bottom: 1px solid rgba(245,206,62,0.2); padding-bottom: 24px; margin-bottom: 32px; }
+      #pre-render h1 { font-family: 'Orbitron', system-ui, sans-serif; font-size: clamp(32px,7vw,56px); font-weight: 900; color: #F5CE3E; letter-spacing: 0.06em; margin-bottom: 8px; }
+      #pre-render .tagline { font-size: 13px; letter-spacing: 0.18em; color: #3ECFF5; opacity: 0.85; text-transform: uppercase; margin-bottom: 16px; font-family: 'IBM Plex Mono', monospace; }
+      #pre-render .intro { font-size: 16px; color: #B4BCE0; max-width: 640px; }
+      #pre-render h2 { font-family: 'Orbitron', system-ui, sans-serif; font-size: 14px; font-weight: 700; color: #F5CE3E; letter-spacing: 0.1em; text-transform: uppercase; margin: 36px 0 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(245,206,62,0.15); }
+      #pre-render p { font-size: 15px; color: #D0D6EC; margin-bottom: 14px; }
+      #pre-render ul { padding-left: 22px; margin-bottom: 16px; }
+      #pre-render li { font-size: 15px; color: #D0D6EC; margin-bottom: 7px; }
+      #pre-render li strong { color: #F0F2FA; }
+      #pre-render .article-card { border: 1px solid rgba(245,206,62,0.15); border-left: 3px solid #F5CE3E; padding: 18px 20px; margin-bottom: 14px; border-radius: 6px; }
+      #pre-render .article-card h3 { font-size: 16px; color: #F0F2FA; margin-bottom: 6px; font-family: 'Orbitron', system-ui, sans-serif; font-weight: 700; letter-spacing: 0.02em; }
+      #pre-render .article-card p { font-size: 14px; color: #8898C4; margin: 0; }
+      #pre-render .article-card .meta { font-size: 11px; color: #7080A8; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.08em; margin-bottom: 8px; }
+      #pre-render .ad-slot { background: rgba(245,206,62,0.04); border: 1px dashed rgba(245,206,62,0.15); border-radius: 6px; padding: 24px; text-align: center; margin: 32px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #485070; letter-spacing: 0.1em; }
+      #pre-render footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: #7080A8; font-family: 'IBM Plex Mono', monospace; }
+      #pre-render .loading { font-size: 11px; letter-spacing: 0.14em; color: #485070; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; margin-top: 32px; }
     </style>
   </head>
   <body>
     <div id="root">
-      <!--
-        Static pre-render shell — visible to search engines and AdSense review bots
-        before JavaScript executes. React replaces this on load.
-      -->
       <div id="pre-render">
-        <h1>DWELL<span>.</span></h1>
-        <p><strong>Real-time MBTA arrivals for Greater Boston.</strong> Live predictions for every subway, commuter rail, and bus stop — updated every 20 seconds, free, no account required.</p>
+        <header>
+          <h1>DWELL</h1>
+          <p class="tagline">Greater Boston Transit Intelligence</p>
+          <p class="intro">Real-time MBTA arrival predictions for every subway, commuter rail, and bus stop in Greater Boston. Free, no account required, updated every 20 seconds from the official MBTA API.</p>
+        </header>
 
-        <h2>MBTA Lines Covered</h2>
+        <!-- Ad slot — above main content, clearly labelled -->
+        <div class="ad-slot">Advertisement</div>
+
+        <h2>Live MBTA Arrivals</h2>
+        <p>DWELL shows live departure countdowns for every MBTA stop. Search by stop name to see which trains are coming, how many minutes away they are, and whether there are any service alerts affecting your route. Predictions are sourced directly from the MBTA v3 real-time API and refresh automatically every 20 seconds.</p>
+        <p>You can also browse by transit mode — choose Subway, Commuter Rail, or Bus, then select your line and stop. Every stop page shows upcoming arrivals grouped by destination, live vehicle positions on a map for commuter rail, and any active service alerts sorted by severity.</p>
+
+        <h2>MBTA Subway Lines</h2>
+        <p>The MBTA rapid transit network serves dozens of Boston neighborhoods across four color-coded lines and the Silver Line bus rapid transit network.</p>
         <ul>
-          <li><strong>Red Line</strong> — Alewife to Braintree / Ashmont</li>
-          <li><strong>Orange Line</strong> — Oak Grove to Forest Hills</li>
-          <li><strong>Green Line</strong> — All branches: B (Boston College), C (Cleveland Circle), D (Riverside), E (Heath Street / Medford)</li>
-          <li><strong>Blue Line</strong> — Wonderland to Bowdoin</li>
-          <li><strong>Silver Line</strong> — SL1, SL2, SL3, SL4, SL5</li>
-          <li><strong>Commuter Rail</strong> — All 13 lines including Providence, Fitchburg, Worcester, Newburyport/Rockport, and more</li>
-          <li><strong>Bus</strong> — Local and express routes across Boston, Cambridge, Somerville, and surrounding towns</li>
+          <li><strong>Red Line</strong> — Cambridge to Braintree and Ashmont via downtown Boston. Passes through Harvard, MIT, Charles/MGH, Park Street, and Downtown Crossing before splitting south of JFK/UMass.</li>
+          <li><strong>Orange Line</strong> — Oak Grove in Malden to Forest Hills in Jamaica Plain. Key stops include North Station, Haymarket, Downtown Crossing, Back Bay, and Ruggles.</li>
+          <li><strong>Green Line</strong> — The most complex line in the system, splitting into four branches west of Kenmore: B (Boston College), C (Cleveland Circle), D (Riverside), and E (Medford/Tufts).</li>
+          <li><strong>Blue Line</strong> — Bowdoin in downtown Boston to Wonderland in Revere, serving East Boston and providing the only direct transit link to Logan Airport.</li>
+          <li><strong>Silver Line</strong> — Bus rapid transit connecting South Station to Logan Airport (SL1), the Seaport (SL2), and Chelsea (SL3).</li>
         </ul>
 
-        <h2>Features</h2>
+        <h2>Commuter Rail</h2>
+        <p>The MBTA Commuter Rail runs 12 lines from North Station and South Station to communities across eastern Massachusetts and Providence, Rhode Island. DWELL shows live departure times, track assignments, and delay alerts for every commuter rail station.</p>
         <ul>
-          <li>Search any stop by name — Park Street, South Station, Salem, North Station, and more</li>
-          <li>Live departure countdowns updating every 20 seconds</li>
-          <li>Service alerts for delays, suspensions, and shuttle buses</li>
-          <li>Trip planner: find direct connections or 1-transfer journeys between any two stops</li>
-          <li>Save favourite stops for instant one-tap access</li>
-          <li>Live commuter rail train map showing real-time vehicle positions</li>
-          <li>Switch between lines at shared stations like Downtown Crossing and North Station</li>
+          <li><strong>From North Station:</strong> Newburyport/Rockport, Haverhill, Lowell, Fitchburg lines</li>
+          <li><strong>From South Station:</strong> Providence/Stoughton, Framingham/Worcester, Franklin/Foxboro, Kingston/Plymouth, Middleborough/Lakeville, Greenbush, Fairmount, Needham lines</li>
         </ul>
+        <p>Commuter rail trains run on a fixed schedule rather than continuously. Check live departures on DWELL before leaving for the station, especially during off-peak hours when gaps between trains can be 60 to 90 minutes.</p>
 
-        <h2>Popular Stops</h2>
-        <ul>
-          <li>Downtown Crossing — Red Line, Orange Line, Silver Line</li>
-          <li>Park Street — Red Line, Green Line</li>
-          <li>Government Center — Blue Line, Green Line</li>
-          <li>South Station — Red Line, Silver Line, Commuter Rail</li>
-          <li>North Station — Orange Line, Green Line, Commuter Rail</li>
-          <li>Kenmore — Green Line B, C, D</li>
-          <li>Forest Hills — Orange Line, Commuter Rail</li>
-          <li>Back Bay — Orange Line, Commuter Rail</li>
-          <li>Ruggles — Orange Line, Commuter Rail</li>
-          <li>Alewife — Red Line (northern terminus)</li>
-          <li>Braintree — Red Line (southern terminus)</li>
-          <li>Salem — Commuter Rail Newburyport/Rockport Line</li>
-          <li>Worcester — Commuter Rail Framingham/Worcester Line</li>
-        </ul>
+        <!-- Ad slot — mid-content -->
+        <div class="ad-slot">Advertisement</div>
+
+        <h2>Trip Planning</h2>
+        <p>The Plan tab on DWELL lets you enter any two stops and find the fastest route between them. DWELL checks for direct services first, then finds 1-transfer connections through major hubs including Downtown Crossing, North Station, South Station, Back Bay, Government Center, and State Street. Results show live departure times and estimated journey duration for each option.</p>
+
+        <h2>Service Alerts</h2>
+        <p>DWELL pulls live MBTA service alerts and displays them at the top of every arrivals board. Alerts are sorted by severity so the most important information appears first: delays and suspensions show before station issues, and station issues show before general notices. Swipe through multiple alerts using the alert carousel.</p>
+
+        <h2>Transit Guides</h2>
+        <p>DWELL includes a growing library of practical guides to getting around Greater Boston, written by real commuters. Current guides cover:</p>
+
+        <div class="article-card">
+          <p class="meta">Michael M &middot; March 12, 2025 &middot; 9 min read</p>
+          <h3>The Complete MBTA Commuter Rail Guide for 2025</h3>
+          <p>Everything you need to know about zones, fares, lines, and tips for first-time commuter rail riders.</p>
+        </div>
+        <div class="article-card">
+          <p class="meta">Michael M &middot; February 28, 2025 &middot; 7 min read</p>
+          <h3>How to Transfer Between MBTA Lines Without Getting Lost</h3>
+          <p>A practical breakdown of Downtown Crossing, North Station, South Station, and every major transfer point in the system.</p>
+        </div>
+        <div class="article-card">
+          <p class="meta">Michael M &middot; March 5, 2025 &middot; 6 min read</p>
+          <h3>Getting to Logan Airport on the MBTA: What Actually Works</h3>
+          <p>Honest advice on the Silver Line, Blue Line, and when it makes more sense to call an Uber.</p>
+        </div>
+        <div class="article-card">
+          <p class="meta">Michael M &middot; January 18, 2025 &middot; 8 min read</p>
+          <h3>Boston Subway Lines Explained: Red, Orange, Green, Blue</h3>
+          <p>What each line covers, which neighborhoods it serves, and which one you actually need.</p>
+        </div>
+
+        <!-- Ad slot — above footer -->
+        <div class="ad-slot">Advertisement</div>
 
         <h2>About DWELL</h2>
-        <p>DWELL is an independent transit dashboard for Boston commuters, students, and visitors. All data comes from the official MBTA v3 real-time API. DWELL is not affiliated with or endorsed by the Massachusetts Bay Transportation Authority.</p>
+        <p>DWELL is an independent transit dashboard built and maintained by Michael M, a Boston area commuter who has been riding the Newburyport line from Salem to North Station since 2022. All transit data comes from the official MBTA v3 real-time API. DWELL is not affiliated with or endorsed by the Massachusetts Bay Transportation Authority.</p>
+        <p>DWELL is free to use and supported by advertising. The app stores your saved stops and preferences locally in your browser and does not collect or sell personal data. See the Privacy Policy and Cookie Policy for details.</p>
 
-        <p class="loading">Loading live arrivals…</p>
+        <p class="loading">Loading live arrivals&hellip;</p>
+
+        <footer>
+          &copy; 2025 DWELL &nbsp;&middot;&nbsp; Not affiliated with the MBTA &nbsp;&middot;&nbsp; dwellmbta.com
+        </footer>
       </div>
     </div>
     <script type="module" src="/src/main.jsx"></script>
