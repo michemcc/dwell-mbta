@@ -1,4 +1,18 @@
 User-agent: *
 Allow: /
+Allow: /guides
+Allow: /about
+Allow: /plan
+
+# Exclude thin/utility pages and dynamic app states from crawling
+# These pages contain no original editorial content for ad serving
+Disallow: /feedback
+Disallow: /privacy
+Disallow: /terms
+Disallow: /cookies
+Disallow: /saved
+
+# Exclude API routes
+Disallow: /api/
 
 Sitemap: https://dwellmbta.com/sitemap.xml

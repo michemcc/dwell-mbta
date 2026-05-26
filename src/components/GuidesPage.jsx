@@ -222,6 +222,114 @@ Transfers between lines within the same paid zone are free as long as you do not
       },
     ],
   },
+
+  {
+    id:       'mbta-tips-for-newcomers',
+    slug:     'mbta-tips-for-newcomers',
+    title:    'MBTA Tips for Boston Newcomers: What Nobody Tells You',
+    subtitle: 'The unwritten rules, hidden shortcuts, and common mistakes',
+    date:     '2025-04-10',
+    dateDisplay: 'April 10, 2025',
+    readMins: 7,
+    tags:     ['Beginner', 'Tips', 'Getting Around'],
+    intro:    "I have given the \"how to get around Boston\" talk to at least a dozen people who moved here for grad school or a new job. These are the things that aren't in the official guide — the stuff you only learn by riding the system for a few months or by having a local explain it to you.",
+    content: [
+      {
+        heading: 'Get a CharlieCard, Not a CharlieTicket',
+        body: `There are two kinds of fare media on the MBTA: the CharlieCard (hard plastic, reloadable, lasts indefinitely) and the CharlieTicket (paper, single-use or limited-use). The plastic CharlieCard gets you the base subway fare of $2.40. The paper ticket charges more for the same ride — I have seen $3.25 on some transactions.
+
+You can pick up a free CharlieCard at the airport, at staffed station booths like Park Street, Downtown Crossing, and South Station, or at certain retail locations. Once you have one, load it at any station kiosk or online via the MBTA app. Tap it against the reader at turnstiles — do not insert it like an ATM card. That slot on the turnstile is for the old paper tickets only.`,
+      },
+      {
+        heading: 'The Free Transfer Window',
+        body: `When you tap your CharlieCard to board a bus, you get a two-hour window during which any further bus or subway rides cost nothing extra. This is a relatively recent policy change that most newcomers don't know about.
+
+It means you can take a bus to the subway, ride the subway across the city, and transfer to another bus — all for one $2.40 base fare — as long as all of that happens within two hours of your first tap. The transfer window does not apply if you exit the paid zone between legs. Keep that in mind when you are connecting at a station where you have to exit and re-enter.`,
+      },
+      {
+        heading: 'Park Street Is the Center of Everything',
+        body: `Park Street station is where the Red Line and Green Line intersect at street level on the Boston Common. If you ever get turned around, make your way to Park Street and you can get anywhere in the system from there — Downtown Crossing is right below at the same hub, adding the Orange Line.
+
+The neighborhood names in Boston are not always obvious from a map. Beacon Hill is a five-minute walk from Charles/MGH on the Red Line, not its own station. The Seaport District is served by the Silver Line SL2 from South Station. Fenway is on the Green Line D branch, not the C branch — a mistake I made my first week.`,
+      },
+      {
+        heading: 'Service Gaps Are Real on Weekends',
+        body: `On weekdays the MBTA runs frequently enough that you rarely wait more than 8 to 10 minutes for a subway train during peak hours. Weekends are different. Early Sunday mornings especially — trains can be 15 to 20 minutes apart, and certain commuter rail lines run only a handful of times all day.
+
+The MBTA app and DWELL both show live wait times, so check before you leave rather than assuming you can just show up. Saturday evenings heading inbound are generally fine. Sunday mornings heading anywhere are when things get thin.`,
+      },
+      {
+        heading: 'Accessibility Varies Enormously by Station',
+        body: `The MBTA system has made significant investments in accessibility over the past decade but it is still uneven. Many older Green Line surface stops are not fully accessible. Certain stations, including some on the Red and Orange lines, have elevators that are frequently out of service.
+
+If you or someone with you needs step-free access, check the MBTA's accessibility map before you go and have a backup route in mind. DWELL shows service alerts, which include elevator outages when reported. The MBTA's customer support line can also tell you the current status of elevators at specific stations.`,
+      },
+      {
+        heading: 'Night Owl and Late Service',
+        body: `The MBTA does not run all night. Last trains on most subway lines leave downtown stations around 12:30 to 1:00 AM on weekdays and slightly later on Friday and Saturday nights. If you miss the last train, your options are Uber, Lyft, or one of the overnight bus routes on select corridors.
+
+The MBTA runs a limited number of late-night bus routes after the subway closes — check the website for current service. Rideshare prices surge significantly after bar close, so if you are heading home late it is worth checking the last train departure and leaving before it rather than relying on apps.`,
+      },
+      {
+        heading: 'Standing Room Protocol',
+        body: `Boston commuters have unwritten rules about packed trains. Move to the center of the car — do not cluster near the doors. The people near the doors are trying to exit at the next stop, and standing in their way while scrolling your phone is a major faux pas.
+
+On escalators, stand on the right, walk on the left. This is enforced by social pressure and occasional pointed staring. At busy stations like Downtown Crossing and Park Street there are audible announcements reminding people of this. The rule is taken seriously.`,
+      },
+    ],
+  },
+
+  {
+    id:       'mbta-charliecard-guide',
+    slug:     'mbta-charliecard-guide',
+    title:    'The Complete CharlieCard Guide: Fares, Passes, and Saving Money on the MBTA',
+    subtitle: 'How to pay, which pass is worth it, and how to not overpay',
+    date:     '2025-05-02',
+    dateDisplay: 'May 2, 2025',
+    readMins: 6,
+    tags:     ['Fares', 'CharlieCard', 'Money'],
+    intro:    "Fares on the MBTA are not complicated, but there are enough options that I have seen people pay significantly more than they needed to — or miss out on passes that would have paid for themselves in a week. Here is everything you need to know about how to pay on the T.",
+    content: [
+      {
+        heading: 'How CharlieCard Fares Work',
+        body: `The base subway fare in 2025 is $2.40 per ride when you use a CharlieCard. Bus rides are $1.70. The CharlieCard is a hard plastic card similar to a hotel key card. You load money onto it at any station kiosk or online, then tap it against the circular reader at turnstiles and bus fare boxes. The card never expires and your balance stays on it indefinitely.
+
+The paper CharlieTicket — which you might get from a kiosk if you are buying a single ride — costs more for the same trips. Subway fare by ticket is $3.25 in many cases versus $2.40 by card. Getting the plastic card is not optional if you want to pay the right price.`,
+      },
+      {
+        heading: 'Where to Get a CharlieCard',
+        body: `Free CharlieCards are available at staffed MBTA information booths at Park Street, Downtown Crossing, North Station, South Station, Alewife, Forest Hills, Back Bay, and several other major stations. You can also get one at Logan Airport near the baggage claim areas.
+
+Some kiosks at stations dispense them, though this can vary. If you are arriving in Boston for the first time, the easiest move is to tap a contactless credit card the first day — the tap rate is higher but you are not locked in — and then get a CharlieCard when you pass through a staffed station. You can transfer your remaining balance from a paper ticket to a CharlieCard at information booths.`,
+      },
+      {
+        heading: 'Monthly Passes: Worth It If You Commute',
+        body: `Monthly passes eliminate the per-ride cost and are worth it if you ride the subway more than about 38 times in a calendar month. A monthly LinkPass costs around $90 and covers unlimited subway, bus, and Silver Line rides for the full calendar month.
+
+You can buy a monthly pass online through the MBTA website, at station kiosks, or through the MBTA mTicket app. If you have a commuter rail pass, different monthly rates apply based on your zone. Zone 1A, which covers the inner-most commuter rail stops like Back Bay and Ruggles, costs around $90 — same as the subway pass. Zone 10 out to Providence costs over $400 per month.
+
+If your employer offers a commuter benefits program, check whether you can use pre-tax dollars to pay for your monthly pass. Federal law allows up to $315 per month (as of 2025) in pre-tax transit benefits, which can meaningfully reduce what you actually pay out of pocket.`,
+      },
+      {
+        heading: 'The Two-Hour Transfer Rule',
+        body: `A policy change introduced in recent years dramatically improved value for multi-modal riders: when you start a trip with a CharlieCard tap on bus or subway, you get a two-hour window in which subsequent rides on bus or subway cost nothing.
+
+This means a commute that combines a bus ride, a subway leg, and another bus at the other end costs just one $2.40 base fare — not three separate charges. The transfer must happen within two hours of your first tap. The window resets each time you start a new trip after the previous two hours have elapsed.`,
+      },
+      {
+        heading: 'Commuter Rail Fares Are Different',
+        body: `Commuter rail uses a zone-based pricing system entirely separate from the subway. Fares range from $2.40 in Zone 1A (the closest stops) to over $12 for Zone 10 at Providence. Your CharlieCard can hold a commuter rail monthly pass, but a stored cash balance on the card generally cannot be used for commuter rail — you need to buy a commuter rail ticket separately at the station kiosk or on the MBTA app.
+
+Conductors on commuter rail will check tickets. If you board at a staffed station and you are caught riding without a ticket, there is a surcharge added to the fare. This happened to someone I used to commute with because they forgot to top up the app before running to catch the train. Buy your ticket before boarding when you can.`,
+      },
+      {
+        heading: 'Reduced Fare Programs',
+        body: `Several groups qualify for reduced fares on the MBTA. Seniors aged 65 or older can get a Senior CharlieCard that cuts the subway fare to $1.10. Riders with disabilities that qualify under ADA provisions can apply for a reduced fare card as well. Youth aged 18 and under with a Youth CharlieCard pay $0.90 per ride.
+
+Each of these requires an application and verification through the MBTA. The applications are available on the MBTA website and typically take a few weeks to process. If you are eligible, the savings add up quickly — the senior discount alone essentially cuts your monthly transit cost in half.`,
+      },
+    ],
+  },
 ]
 
 // ── Inject JSON-LD Article schema into document head ─────────────────────────

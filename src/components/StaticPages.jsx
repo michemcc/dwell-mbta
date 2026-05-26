@@ -133,6 +133,20 @@ export function AboutPage({ onNavigate }) {
             fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit' }}
         >Cookie Policy</button>.
       </P>
+      <H>Why DWELL exists</H>
+      <P>
+        Boston's official MBTA app is functional but slow, and checking it while rushing for a train
+        feels like too many taps. Third-party apps exist but most are unmaintained or require accounts.
+        DWELL was built to be the thing I actually wanted: fast, no login, always current, works on any phone.
+        The name refers to "dwell time" — the seconds a train sits at a platform with doors open.
+        Commuters count those seconds.
+      </P>
+      <H>Open source</H>
+      <P>
+        DWELL is open source. The code is written in React and connects to the MBTA v3 public API.
+        The API is free and open — any developer can use it. DWELL adds stop search, favorites,
+        trip planning, service alert parsing, and a consistent interface on top of the raw data.
+      </P>
       <H>Contact</H>
       <P>
         Found a bug or have a suggestion?{' '}
@@ -304,30 +318,95 @@ export function PrivacyPage({ onNavigate }) {
     <PageShell title="Privacy Policy" label={`Effective ${new Date().getFullYear()}`} current="privacy" onNavigate={onNavigate}>
       <P>
         DWELL is designed to respect your privacy. This policy explains what data is collected,
-        what is not, and how the app operates.
+        what is not, and how the app operates. We believe in being direct: DWELL does not build
+        profiles on its users, does not sell data, and does not know who you are.
       </P>
       <H>What we collect</H>
       <P>
-        DWELL does not collect, store, or transmit any personal information.
+        DWELL does not collect, store, or transmit any personal information about you.
         All transit data is fetched directly from the MBTA API and displayed in your browser.
-        No analytics, tracking pixels, or third-party scripts are loaded.
+        There are no user accounts, no sign-up forms, and no login wall. Your identity is
+        entirely unknown to DWELL.
+      </P>
+      <H>Third-party advertising</H>
+      <P>
+        DWELL uses Google AdSense to display advertisements. Google AdSense is a third-party
+        advertising service that may use cookies and similar tracking technologies to serve ads
+        relevant to your interests. These cookies are set by Google's domains and are subject to
+        Google's own privacy policy, which you can review at{' '}
+        <A href="https://policies.google.com/privacy">policies.google.com/privacy</A>.
+      </P>
+      <P>
+        Google may use information about your visits to DWELL and other websites to show you
+        personalised advertisements. This is standard behavior for Google AdSense and is governed
+        entirely by Google, not by DWELL. You can opt out of personalised advertising at{' '}
+        <A href="https://www.google.com/settings/ads">google.com/settings/ads</A>.
       </P>
       <H>Local storage</H>
       <P>
-        DWELL stores your saved stops and theme preference in your browser's local storage.
-        This data never leaves your device and can be cleared at any time from your browser settings.
+        DWELL stores your saved stops and dark/light theme preference in your browser's local storage.
+        Local storage is a browser feature that keeps data on your own device — it functions
+        similarly to a cookie but with a larger capacity and no automatic expiry. This data never
+        leaves your device, is never transmitted to DWELL's servers, and can be cleared at any
+        time through your browser settings (typically under Privacy or Site Data).
+      </P>
+      <H>Cookies set by DWELL</H>
+      <P>
+        DWELL sets one first-party cookie: <strong>dwell_cookie_consent</strong>. This cookie
+        records whether you have accepted or declined the cookie banner so it does not
+        reappear on every visit. It contains no personal information and expires after one year.
+        Beyond this single preference cookie, DWELL sets no other first-party cookies.
       </P>
       <H>Feedback form</H>
       <P>
-        If you submit feedback, your message is sent to the developer via Resend.
-        Only the text you type is transmitted — no IP address, device info, or identifying data is attached.
+        If you choose to submit feedback, your message text is sent to the developer via a
+        third-party email delivery service (Resend). Only the text you type in the feedback form
+        is transmitted — no IP address, browser fingerprint, device identifier, or any other
+        identifying data is included in the submission.
+      </P>
+      <H>Server logs</H>
+      <P>
+        DWELL is hosted on Vercel. Like all web servers, Vercel logs basic request data
+        (IP address, browser type, pages requested, timestamps) for operational and security
+        purposes. DWELL does not access or retain these logs for user profiling. Vercel's data
+        practices are governed by Vercel's own privacy policy.
+      </P>
+      <H>MBTA API requests</H>
+      <P>
+        When you use DWELL, your browser makes requests directly to the MBTA v3 real-time API
+        to fetch arrival predictions and service alerts. These requests originate from your device
+        and are subject to the MBTA's own terms of use and data policies. DWELL does not proxy
+        or cache these requests server-side in a way that would expose your activity to DWELL.
+      </P>
+      <H>Children</H>
+      <P>
+        DWELL is a general-purpose transit tool and does not knowingly collect any information
+        from children under 13. If you believe a child has submitted personal information through
+        the feedback form, please contact us so we can delete it promptly.
       </P>
       <H>Data source</H>
       <P>
         All transit data is provided by the{' '}
         <A href="https://www.mbta.com/">Massachusetts Bay Transportation Authority (MBTA)</A>.
         DWELL is an independent project and is not affiliated with or endorsed by the MBTA.
-        Prediction accuracy depends on real-time vehicle reporting and may vary.
+        Prediction accuracy depends on real-time vehicle reporting and may vary by line and time of day.
+      </P>
+      <H>Changes to this policy</H>
+      <P>
+        This privacy policy may be updated periodically. The effective year at the top of the
+        page reflects the most recent revision. Continued use of DWELL after changes constitutes
+        acceptance of the updated policy. Material changes will be noted in the version history
+        at the bottom of this page.
+      </P>
+      <H>Contact</H>
+      <P>
+        Questions about this privacy policy?{' '}
+        <button onClick={() => onNavigate('feedback')}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            color: 'var(--accent)', borderBottom: '1px solid var(--accent-dim)',
+            fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit' }}
+        >Get in touch</button>.
+        We will respond within a reasonable time.
       </P>
     </PageShell>
   )

@@ -3,7 +3,7 @@
 
   <url>
     <loc>https://dwellmbta.com/</loc>
-    <lastmod>2026-04-07</lastmod>
+    <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -15,7 +15,7 @@
   </url>
   <url>
     <loc>https://dwellmbta.com/guides</loc>
-    <lastmod>2026-04-07</lastmod>
+    <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -44,35 +44,22 @@
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://dwellmbta.com/about</loc>
-    <lastmod>2026-04-07</lastmod>
+    <loc>https://dwellmbta.com/guides/mbta-tips-for-newcomers</loc>
+    <lastmod>2026-04-10</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://dwellmbta.com/feedback</loc>
-    <lastmod>2026-04-07</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <loc>https://dwellmbta.com/guides/mbta-charliecard-guide</loc>
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://dwellmbta.com/privacy</loc>
-    <lastmod>2026-04-07</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
-    <loc>https://dwellmbta.com/terms</loc>
-    <lastmod>2026-01-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://dwellmbta.com/cookies</loc>
-    <lastmod>2026-01-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <loc>https://dwellmbta.com/about</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 
 </urlset>
