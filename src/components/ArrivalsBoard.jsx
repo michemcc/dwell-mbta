@@ -4,7 +4,7 @@ import { usePredictions, useClock, useStops, useRoutesForStop, useVehicles } fro
 import { Spinner, LiveDot, MonoLabel, Divider, ErrorBox, SkeletonRow, Pill } from './Primitives'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CR Train Map Modal — interactive, zoomable, pannable live train map
+// CR Train Map Modal  -  interactive, zoomable, pannable live train map
 // ─────────────────────────────────────────────────────────────────────────────
 function CRTrainModal({ route, onClose }) {
   const { vehicles, loading, refresh } = useVehicles(route?.id, 15000)
@@ -356,7 +356,7 @@ function CRTrainModal({ route, onClose }) {
                     position: 'relative', overflow: 'visible',
                   }}
                 >
-                  {/* Direction arrow — SVG outside the marker circle, clearly visible */}
+                  {/* Direction arrow  -  SVG outside the marker circle, clearly visible */}
                   {bearing != null && (
                     <svg
                       width="56" height="56"
@@ -381,7 +381,7 @@ function CRTrainModal({ route, onClose }) {
                         fill={lc.accent} />
                     </svg>
                   )}
-                  {/* Train icon — counter-rotated so it stays upright */}
+                  {/* Train icon  -  counter-rotated so it stays upright */}
                   <span style={{ fontSize: isSelected ? 16 : 12, lineHeight: 1, userSelect: 'none', color: isSelected ? '#000' : lc.accent }}>🚆</span>
                 </button>
 
@@ -406,7 +406,7 @@ function CRTrainModal({ route, onClose }) {
             const popupX = Math.max(8, Math.min(dims.w - popupW - 8, x - popupW / 2))
             const popupY = y - popupH - 52  // above the marker
             const sv = selectedVehicle
-            const status  = sv.attributes?.current_status?.replace(/_/g, ' ').toLowerCase() || '—'
+            const status  = sv.attributes?.current_status?.replace(/_/g, ' ').toLowerCase() || ' - '
             const speed   = sv.attributes?.speed != null ? `${Math.round(sv.attributes.speed)} km/h` : null
             const bearing = sv.attributes?.bearing != null ? `${Math.round(sv.attributes.bearing)}°` : null
             const label   = sv.attributes?.label || sv.id.slice(-4)
@@ -505,7 +505,7 @@ function CRTrainModal({ route, onClose }) {
         {activeVehicles.length > 0 && (
           <div style={{ maxHeight: 160, overflowY: 'auto', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
             {activeVehicles.map(v => {
-              const status  = v.attributes?.current_status?.replace(/_/g, ' ') || '—'
+              const status  = v.attributes?.current_status?.replace(/_/g, ' ') || ' - '
               const label   = v.attributes?.label || v.id.slice(-4)
               const speed   = v.attributes?.speed
               const isSelected = selectedVehicle?.id === v.id
@@ -554,7 +554,7 @@ function CRTrainModal({ route, onClose }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// StopMap — for non-CR routes (tile map centered on stop)
+// StopMap  -  for non-CR routes (tile map centered on stop)
 // ─────────────────────────────────────────────────────────────────────────────
 function StopMap({ stop, accent, isCR, onOpenCRModal }) {
   const containerRef = useRef(null)
@@ -738,7 +738,7 @@ function StopDropdown({ route, currentStop, onSelect }) {
         fontSize: 'clamp(22px, 5vw, 36px)', fontWeight: 800,
         letterSpacing: '-0.03em', cursor: 'pointer', transition: 'all 0.14s', lineHeight: 1, maxWidth: '100%',
       }}>
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentStop?.attributes?.name || '—'}</span>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentStop?.attributes?.name || ' - '}</span>
         <span style={{ fontSize: 14, color: lc.accent, flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s' }}>▾</span>
       </button>
       {open && (
@@ -796,7 +796,7 @@ function StopDropdown({ route, currentStop, onSelect }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AlertBanner — horizontal swipe/scroll carousel, one card per alert
+// AlertBanner  -  horizontal swipe/scroll carousel, one card per alert
 // ─────────────────────────────────────────────────────────────────────────────
 function AlertBanner({ alerts }) {
   const trackRef  = useRef(null)
@@ -891,7 +891,7 @@ function AlertBanner({ alerts }) {
         ))}
       </div>
 
-      {/* Dot indicators — only when multiple alerts */}
+      {/* Dot indicators  -  only when multiple alerts */}
       {alerts.length > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 8 }}>
           {alerts.map((_, i) => (
@@ -1054,7 +1054,7 @@ function DestinationGroup({ group, accent, groupIndex }) {
             )}
             {/* Scheduled time */}
             <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.06em', flex: 1 }}>
-              {arrTime ? new Date(arrTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+              {arrTime ? new Date(arrTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ' - '}
             </span>
             {/* Live countdown on every row */}
             <LiveCountdown isoTime={arrTime} large={isBranched && rowIdx === 0} />
@@ -1066,7 +1066,7 @@ function DestinationGroup({ group, accent, groupIndex }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ArrivalsBoard — main export
+// ArrivalsBoard  -  main export
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ArrivalsBoard({ mode, route: initialRoute, stop: initialStop, isFavorite, onToggleFavorite, onBack }) {
   const [route, setRoute]         = useState(initialRoute)
@@ -1107,7 +1107,7 @@ export default function ArrivalsBoard({ mode, route: initialRoute, stop: initial
       }
     } catch { newStop = null }
 
-    // Single batched state update — route and stop change in the same render,
+    // Single batched state update  -  route and stop change in the same render,
     // so usePredictions sees a consistent (stopId, routeId) pair immediately.
     setRoute(newRoute)
     setStop(newStop)
@@ -1171,7 +1171,7 @@ export default function ArrivalsBoard({ mode, route: initialRoute, stop: initial
       {/* Line chips */}
       <LineChips stopId={stop?.id} activeRouteId={route?.id} onSelect={handleRouteChipSelect} />
 
-      {/* Alerts — reset index on every new alerts array (guards against stale display) */}
+      {/* Alerts  -  reset index on every new alerts array (guards against stale display) */}
       <AlertBanner alerts={alerts} />
       <ErrorBox message={error} style={{ marginBottom: 16 }} />
 

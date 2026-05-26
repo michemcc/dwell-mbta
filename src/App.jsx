@@ -13,9 +13,9 @@ import { Scanlines, LiveDot, MonoLabel, Spinner, Pill } from './components/Primi
 const VERSION = '2026.4.11'
 const DONATE_URL = 'https://buymeacoffee.com/michemcc'
 
-// ── QuickSearch — stop search, instant commit, no route-picking step ────────
+// ── QuickSearch  -  stop search, instant commit, no route-picking step ────────
 // Selecting a stop immediately fetches its routes and navigates to arrivals.
-// The route-picker second step has been removed — faster for commuters.
+// The route-picker second step has been removed  -  faster for commuters.
 function QuickSearch({ onCommit, autoFocus }) {
   const [query, setQuery] = useState('')
   const [open, setOpen]   = useState(false)
@@ -171,9 +171,9 @@ function QuickSearch({ onCommit, autoFocus }) {
   )
 }
 
-// ── LandingPage — tabbed: Search (instant) | Browse (cascade) ────────────────
+// ── LandingPage  -  tabbed: Search (instant) | Browse (cascade) ────────────────
 function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }) {
-  const [tab, setTab] = useState('browse')  // 'browse' | 'search'
+  const [tab, setTab] = useState('search')  // 'search' | 'browse'
 
   return (
     <div className="anim-fade-in">
@@ -202,7 +202,7 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
         </div>
       </div>
 
-      {/* Saved stops — always shown above the tab UI */}
+      {/* Saved stops  -  always shown above the tab UI */}
       {favorites.length > 0 && (
         <div style={{ marginBottom: 32 }}>
           <FavoritesPanel favorites={favorites} onOpen={onOpenFav} onRemove={onRemoveFav} />
@@ -236,7 +236,7 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
         ))}
       </div>
 
-      {/* Search tab — type stop name → tap → instant arrivals, no extra steps */}
+      {/* Search tab  -  type stop name → tap → instant arrivals, no extra steps */}
       {tab === 'search' && (
         <div className="anim-fade-in" style={{ minHeight: 240 }}>
           <p style={{
@@ -249,7 +249,7 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
         </div>
       )}
 
-      {/* Browse tab — full Mode → Route → Stop cascade */}
+      {/* Browse tab  -  full Mode → Route → Stop cascade */}
       {tab === 'browse' && (
         <div className="anim-fade-in">
           <SelectorPanel onCommit={onCommit} />
@@ -258,7 +258,7 @@ function LandingPage({ favorites, onCommit, onOpenFav, onRemoveFav, onNavigate }
 
       {/* Footer */}
       <footer style={{ marginTop: 52, paddingTop: 28, borderTop: '1px solid var(--border)' }}>
-        {/* Donate — centrepiece of the footer */}
+        {/* Donate  -  centrepiece of the footer */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 28 }}>
           <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text-muted)', margin: 0, textAlign: 'center', lineHeight: 1.5 }}>
             DWELL is free and independent. If it saves you time,
@@ -444,7 +444,7 @@ function Header({ onLogoClick, theme, onThemeToggle }) {
     }}>
       <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10, height: 50 }}>
 
-        {/* Logo — always visible */}
+        {/* Logo  -  always visible */}
         <button onClick={onLogoClick} style={{
           display: 'flex', alignItems: 'baseline', gap: 7, flexShrink: 0,
           background: 'none', border: 'none', cursor: 'pointer', padding: 0, transition: 'opacity 0.14s',
@@ -458,14 +458,14 @@ function Header({ onLogoClick, theme, onThemeToggle }) {
 
         <div style={{ flex: 1 }} />
 
-        {/* Clock — desktop only */}
+        {/* Clock  -  desktop only */}
         {!isMobile && (
           <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.1em', flexShrink: 0 }}>
             {clock.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </span>
         )}
 
-        {/* Theme toggle — icon-only on mobile, icon+label on desktop */}
+        {/* Theme toggle  -  icon-only on mobile, icon+label on desktop */}
         <button onClick={onThemeToggle} title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           style={{
             display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
@@ -492,7 +492,7 @@ function Header({ onLogoClick, theme, onThemeToggle }) {
           {!isMobile && <span>{isDark ? 'LIGHT' : 'DARK'}</span>}
         </button>
 
-        {/* Live indicator — dot only on mobile, dot+text on desktop */}
+        {/* Live indicator  -  dot only on mobile, dot+text on desktop */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
           <LiveDot color="#3FCF84" size={7} />
           {!isMobile && (
@@ -527,7 +527,7 @@ export default function App() {
   // URL ↔ page mapping for real addressable routes
   const PAGE_TO_PATH = {
     landing:  '/',
-    arrivals: '/',    // arrivals is dynamic — stays at /
+    arrivals: '/',    // arrivals is dynamic  -  stays at /
     saved:    '/saved',
     plan:     '/plan',
     guides:   '/guides',
@@ -663,7 +663,7 @@ export default function App() {
           pointerEvents: 'none', zIndex: 0,
         }} />
       )}
-      {/* Top accent stripe — animated data stream */}
+      {/* Top accent stripe  -  animated data stream */}
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0, height: 2, zIndex: 999,
         background: 'linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--cyan) 60%, var(--green) 85%, transparent 100%)',

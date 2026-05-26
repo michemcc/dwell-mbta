@@ -46,7 +46,7 @@ function SectionNav({ current, onNavigate }) {
 function PageShell({ title, label, current, onNavigate, children }) {
   return (
     <div className="anim-fade-in">
-      {/* Section sub-nav — always shown on About/Feedback/Privacy */}
+      {/* Section sub-nav  -  always shown on About/Feedback/Privacy */}
       <SectionNav current={current} onNavigate={onNavigate} />
 
       {/* Page title */}
@@ -95,12 +95,12 @@ export function AboutPage({ onNavigate }) {
     <PageShell title="About DWELL" label={`v${VERSION}`} current="about" onNavigate={onNavigate}>
       <P>
         DWELL is a real-time MBTA transit dashboard for Greater Boston.
-        Live predictions for subway, commuter rail, and bus — no account required, no ads, no tracking.
+        Live predictions for subway, commuter rail, and bus  -  no account required, no ads, no tracking.
       </P>
       <H>How it works</H>
       <P>
         All data comes from the{' '}
-        <A href="https://api-v3.mbta.com/">MBTA v3 API</A> — the same data the official MBTA
+        <A href="https://api-v3.mbta.com/">MBTA v3 API</A>  -  the same data the official MBTA
         app uses. Predictions update every 20 seconds. Service alerts appear instantly.
       </P>
       <H>Features</H>
@@ -138,13 +138,13 @@ export function AboutPage({ onNavigate }) {
         Boston's official MBTA app is functional but slow, and checking it while rushing for a train
         feels like too many taps. Third-party apps exist but most are unmaintained or require accounts.
         DWELL was built to be the thing I actually wanted: fast, no login, always current, works on any phone.
-        The name refers to "dwell time" — the seconds a train sits at a platform with doors open.
+        The name refers to "dwell time"  -  the seconds a train sits at a platform with doors open.
         Commuters count those seconds.
       </P>
       <H>Open source</H>
       <P>
         DWELL is open source. The code is written in React and connects to the MBTA v3 public API.
-        The API is free and open — any developer can use it. DWELL adds stop search, favorites,
+        The API is free and open  -  any developer can use it. DWELL adds stop search, favorites,
         trip planning, service alert parsing, and a consistent interface on top of the raw data.
       </P>
       <H>Contact</H>
@@ -157,7 +157,7 @@ export function AboutPage({ onNavigate }) {
             fontFamily: 'inherit', fontSize: 'inherit', lineHeight: 'inherit',
           }}
         >Send feedback</button>
-        {' '}— it goes straight to the developer.
+        {' '} -  it goes straight to the developer.
       </P>
     </PageShell>
   )
@@ -218,7 +218,7 @@ export function FeedbackPage({ onNavigate }) {
             Feedback received
           </div>
           <div style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>
-            Thanks — it goes straight to the developer.
+            Thanks  -  it goes straight to the developer.
           </div>
           <button onClick={() => { setStatus('idle'); setForm({ type: 'bug', message: '' }) }}
             style={{
@@ -290,7 +290,7 @@ export function FeedbackPage({ onNavigate }) {
           borderLeft: '3px solid var(--red)', borderRadius: 'var(--radius-sm)',
           fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--red)', lineHeight: 1.6,
         }}>
-          ⚠ {errMsg || 'Send failed — please try again.'}
+          ⚠ {errMsg || 'Send failed  -  please try again.'}
         </div>
       )}
 
@@ -345,7 +345,7 @@ export function PrivacyPage({ onNavigate }) {
       <H>Local storage</H>
       <P>
         DWELL stores your saved stops and dark/light theme preference in your browser's local storage.
-        Local storage is a browser feature that keeps data on your own device — it functions
+        Local storage is a browser feature that keeps data on your own device  -  it functions
         similarly to a cookie but with a larger capacity and no automatic expiry. This data never
         leaves your device, is never transmitted to DWELL's servers, and can be cleared at any
         time through your browser settings (typically under Privacy or Site Data).
@@ -361,7 +361,7 @@ export function PrivacyPage({ onNavigate }) {
       <P>
         If you choose to submit feedback, your message text is sent to the developer via a
         third-party email delivery service (Resend). Only the text you type in the feedback form
-        is transmitted — no IP address, browser fingerprint, device identifier, or any other
+        is transmitted  -  no IP address, browser fingerprint, device identifier, or any other
         identifying data is included in the submission.
       </P>
       <H>Server logs</H>
